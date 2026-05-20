@@ -579,82 +579,91 @@ select.filter option { background: var(--surface); }
 }
 /* ══ SYLLABUS ══ */
 .color-dot {
-  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
   border: 2px solid transparent; transition: transform 0.1s, border-color 0.1s; flex-shrink: 0;
 }
 .color-dot:hover { transform: scale(1.2); }
 .active-dot { border-color: var(--ink) !important; transform: scale(1.15); }
 
 .book-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: all 0.12s; border-left: 3px solid var(--accent);
+}
+.book-card:hover { background: var(--surface2); }
+.book-card.active-book { background: var(--surface2); border-color: var(--border2); }
+.book-card-name { font-size: 0.8rem; font-weight: 600; flex: 1; }
+.book-card-sub { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+
+/* Minimal chapter cards */
+.ch-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
-  display: flex; align-items: center; gap: 12px;
-  cursor: pointer; transition: all 0.12s;
-  border-left: 4px solid var(--accent);
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 12px;
+  align-items: start;
+  transition: border-color 0.12s;
+  animation: taskIn 0.18s ease;
 }
-.book-card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
-.book-card.active-book { background: var(--surface2); }
-.book-card-name { font-size: 0.82rem; font-weight: 600; flex: 1; }
-.book-card-sub { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
-.book-card-pct { font-size: 1rem; font-weight: 700; font-family: var(--font-display); }
+.ch-card:hover { border-color: var(--border2); }
+.ch-card.ch-done { border-left: 3px solid var(--green); }
+.ch-card.ch-reading { border-left: 3px solid var(--blue); }
+.ch-card.ch-pending { border-left: 3px solid var(--border2); }
 
-.syl-table {
-  width: 100%; border-collapse: collapse;
-  font-size: 0.72rem; background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+.ch-num { font-size: 0.65rem; color: var(--muted); padding-top: 2px; text-align: right; }
+.ch-name { font-size: 0.82rem; font-weight: 600; margin-bottom: 8px; }
+.ch-notes-inp {
+  font-size: 0.68rem; color: var(--muted); background: none; border: none;
+  border-bottom: 1px dashed var(--border); width: 100%; outline: none;
+  font-family: var(--font-mono); padding: 2px 0; margin-bottom: 10px;
 }
-.syl-table th {
-  background: var(--surface2); padding: 10px 12px;
-  text-align: left; font-size: 0.58rem; text-transform: uppercase;
-  letter-spacing: 1px; color: var(--muted); border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-.syl-table td {
-  padding: 9px 12px; border-bottom: 1px solid var(--border);
-  vertical-align: middle; color: var(--ink);
-}
-.syl-table tr:last-child td { border-bottom: none; }
-.syl-table tr:hover td { background: var(--surface2); }
+.ch-notes-inp:focus { border-color: var(--accent); color: var(--ink); }
 
-.ch-pri { padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; }
+.ch-trackers { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ch-tracker {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px;
+}
+.ch-tracker-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.ch-tracker-count { font-size: 0.85rem; font-weight: 700; min-width: 28px; text-align: center; }
+.ch-tracker-date { font-size: 0.6rem; color: var(--muted); }
+.ch-log-btn {
+  background: var(--surface3); border: 1px solid var(--border2);
+  color: var(--muted); font-family: var(--font-mono); font-size: 0.6rem;
+  padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.1s;
+}
+.ch-log-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.ch-pri-tag { font-size: 0.55rem; padding: 2px 7px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
 .ch-pri-High { background: var(--red-dim); color: var(--red); }
 .ch-pri-Medium { background: #e3b34122; color: var(--yellow); }
 .ch-pri-Low { background: var(--green-dim); color: var(--green); }
 
-.ch-count-btn {
-  background: var(--surface3); border: 1px solid var(--border);
-  color: var(--ink); font-family: var(--font-mono); font-size: 0.65rem;
-  padding: 3px 7px; border-radius: 4px; cursor: pointer; transition: all 0.1s;
-}
-.ch-count-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ch-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.ch-status-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+.badge-done { background: var(--green-dim); color: var(--green); }
+.badge-reading { background: var(--blue-dim); color: var(--blue); }
+.badge-pending { background: var(--surface3); color: var(--muted); }
 
-.ch-status-done { color: var(--green); font-weight: 700; }
-.ch-status-reading { color: var(--blue); }
-.ch-status-pending { color: var(--muted); }
-
-.log-date-btn {
-  background: none; border: 1px dashed var(--border2); color: var(--muted);
-  font-family: var(--font-mono); font-size: 0.58rem; padding: 3px 7px;
-  border-radius: 4px; cursor: pointer; transition: all 0.1s; white-space: nowrap;
+/* Edit modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center;
 }
-.log-date-btn:hover { border-color: var(--accent); color: var(--accent); }
-.log-date-filled { border-style: solid; color: var(--ink); background: var(--surface2); }
-
-.ch-notes-input {
-  background: var(--surface2); border: 1px solid var(--border); color: var(--ink);
-  font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 8px;
-  border-radius: 4px; width: 100%; outline: none;
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 24px; width: min(480px, 90vw);
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: var(--shadow); animation: slideDown 0.2s ease;
 }
-.ch-notes-input:focus { border-color: var(--accent); }
-
-.mcq-badge {
-  background: var(--purple-dim); color: var(--purple);
-  padding: 2px 7px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;
-  cursor: pointer;
-}
-.mcq-badge.done-mcq { background: var(--green-dim); color: var(--green); }
+.modal-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -928,73 +937,74 @@ select.filter option { background: var(--surface); }
         </div>
       </div>
 
-      <!-- Chapter Table -->
+      <!-- Chapter Section -->
       <div id="syllabusChapterSection" style="display:none">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
           <div class="section-title" id="syllabusBookTitle" style="margin-bottom:0;flex:1">Chapters</div>
-          <button class="btn btn-primary btn-sm" onclick="toggleAddChapter()">+ Add Chapter</button>
+          <button class="btn btn-primary btn-sm" onclick="openChapterModal()">+ Add Chapter</button>
           <button class="btn btn-ghost btn-sm" onclick="exportSyllabus()">↓ Export</button>
         </div>
 
-        <!-- Add Chapter Panel -->
-        <div class="add-panel" id="addChapterPanel" style="flex-direction:column;gap:10px;margin-bottom:16px">
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <div class="form-group">
-              <label>Chapter Name *</label>
-              <input type="text" id="chName" placeholder="e.g. Harappan Cultures" style="min-width:220px">
-            </div>
+        <!-- Stats -->
+        <div class="summary-row" id="syllabusSummary" style="margin-bottom:16px"></div>
+
+        <!-- Chapter Cards -->
+        <div id="syllabusCards"></div>
+      </div>
+    </div>
+
+    <!-- Chapter Modal -->
+    <div id="chModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center">
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:10px;padding:24px;width:min(500px,92vw);max-height:90vh;overflow-y:auto">
+        <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:18px" id="chModalTitle">Add Chapter</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="form-group">
+            <label>Chapter Name *</label>
+            <input type="text" id="chName" placeholder="e.g. Harappan Cultures">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="form-group">
               <label>Priority</label>
               <select id="chPri">
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+                <option value="High">🔴 High</option>
+                <option value="Medium">🟡 Medium</option>
+                <option value="Low">🟢 Low</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Target Readings</label>
-              <input type="number" id="chTargetRead" value="2" min="1" max="10" style="width:80px">
+              <label>Status</label>
+              <select id="chStatus">
+                <option value="pending">Pending</option>
+                <option value="reading">Reading</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div class="form-group">
+              <label>Target Reads</label>
+              <input type="number" id="chTargetRead" value="2" min="1" max="20">
             </div>
             <div class="form-group">
               <label>Target Revisions</label>
-              <input type="number" id="chTargetRev" value="2" min="0" max="10" style="width:80px">
+              <input type="number" id="chTargetRev" value="2" min="0" max="20">
             </div>
             <div class="form-group">
-              <label>Notes</label>
-              <input type="text" id="chNotes" placeholder="Optional..." style="min-width:160px">
+              <label>Target MCQ</label>
+              <input type="number" id="chTargetMcq" value="1" min="0" max="20">
             </div>
           </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary" onclick="addChapter()">Save Chapter</button>
-            <button class="btn btn-ghost" onclick="toggleAddChapter()">Cancel</button>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="chNotes" placeholder="Any notes about this chapter..."></textarea>
           </div>
         </div>
-
-        <!-- Chapter Table -->
-        <div style="overflow-x:auto">
-          <table class="syl-table" id="syllabusTable">
-            <thead>
-              <tr>
-                <th style="width:40px">#</th>
-                <th>Chapter</th>
-                <th style="width:90px">Priority</th>
-                <th style="width:110px">Readings</th>
-                <th style="width:160px">Last Read</th>
-                <th style="width:110px">Revisions</th>
-                <th style="width:160px">Last Revised</th>
-                <th style="width:80px">MCQ</th>
-                <th style="width:90px">Status</th>
-                <th style="width:60px">Act</th>
-              </tr>
-            </thead>
-            <tbody id="syllabusTableBody"></tbody>
-          </table>
+        <div style="display:flex;gap:8px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveChapterModal()">Save</button>
+          <button class="btn btn-ghost" onclick="closeChapterModal()">Cancel</button>
+          <button class="btn btn-danger btn-sm" id="chDeleteBtn" style="margin-left:auto;display:none" onclick="deleteChapterFromModal()">Delete</button>
         </div>
-
-        <!-- Stats bar -->
-        <div class="summary-row" id="syllabusSummary" style="margin-top:16px"></div>
       </div>
-
     </div>
 
   </div><!-- /content -->
@@ -1475,6 +1485,7 @@ let syllabusBooks    = [];
 let syllabusChapters = [];
 let activeSylBookId  = null;
 let sbColor          = '#e07b54';
+let editingChapterId = null;
 
 onSnapshot(query(syllabusCol, orderBy('created','asc')), snap => {
   syllabusBooks = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
@@ -1482,7 +1493,7 @@ onSnapshot(query(syllabusCol, orderBy('created','asc')), snap => {
 });
 onSnapshot(query(chaptersCol, orderBy('order','asc')), snap => {
   syllabusChapters = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
-  if (currentTab === 'syllabus') renderSyllabusTable();
+  if (currentTab === 'syllabus') { renderSyllabusBooks(); renderSyllabusCards(); }
 });
 
 function setSbColor(c, el) {
@@ -1490,51 +1501,44 @@ function setSbColor(c, el) {
   document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active-dot'));
   el.classList.add('active-dot');
 }
-
 function toggleSyllabusAddBook() {
   const p = document.getElementById('syllabusAddBook');
   p.classList.toggle('open');
 }
-
 async function addSyllabusBook() {
   const name = document.getElementById('sbName').value.trim();
   if (!name) { toast('Enter a book name'); return; }
-  await addDoc(syllabusCol, {
-    name, subject: document.getElementById('sbSubject').value,
-    color: sbColor, created: today()
-  });
+  const ref = await addDoc(syllabusCol, { name, subject: document.getElementById('sbSubject').value, color: sbColor, created: today() });
   document.getElementById('sbName').value = '';
   document.getElementById('syllabusAddBook').classList.remove('open');
+  selectBook(ref.id);
   toast('Book added!');
 }
-
 async function deleteSyllabusBook(id) {
   if (!confirm('Delete this book and ALL its chapters?')) return;
   await deleteDoc(doc(db,'syllabusBooks',id));
-  // delete chapters
   const toDelete = syllabusChapters.filter(c => c.bookId === id);
   await Promise.all(toDelete.map(c => deleteDoc(doc(db,'syllabusChapters',c._id))));
   activeSylBookId = null;
   document.getElementById('syllabusChapterSection').style.display = 'none';
   toast('Book deleted');
 }
-
 function renderSyllabusBooks() {
   const el = document.getElementById('syllabusBookList');
   if (!syllabusBooks.length) {
-    el.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:8px 0">No books yet. Add one below.</div>';
+    el.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:8px 0">No books yet.</div>';
     return;
   }
   el.innerHTML = syllabusBooks.map(b => {
     const chs = syllabusChapters.filter(c => c.bookId === b._id);
-    const done = chs.filter(c => (c.readCount||0) >= (c.targetRead||1)).length;
+    const done = chs.filter(c => c.status === 'done').length;
     const pct = chs.length ? Math.round(done/chs.length*100) : 0;
     return `<div class="book-card ${activeSylBookId===b._id?'active-book':''}" style="border-left-color:${b.color||'var(--accent)'}" onclick="selectBook('${b._id}')">
-      <div style="flex:1">
+      <div style="flex:1;min-width:0">
         <div class="book-card-name">${esc(b.name)}</div>
-        <div class="book-card-sub">${b.subject} · ${chs.length} chapters · ${done} read</div>
+        <div class="book-card-sub">${b.subject} · ${chs.length} ch · ${done} done</div>
         <div style="height:3px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${b.color||'var(--accent)'};border-radius:2px"></div>
+          <div style="width:${pct}%;height:100%;background:${b.color||'var(--accent)'};border-radius:2px;transition:width 0.4s"></div>
         </div>
       </div>
       <div class="book-card-pct" style="color:${b.color||'var(--accent)'}">${pct}%</div>
@@ -1542,145 +1546,192 @@ function renderSyllabusBooks() {
     </div>`;
   }).join('');
 }
-
 function selectBook(id) {
   activeSylBookId = id;
   renderSyllabusBooks();
-  renderSyllabusTable();
+  renderSyllabusCards();
   document.getElementById('syllabusChapterSection').style.display = '';
 }
 
-function toggleAddChapter() {
-  document.getElementById('addChapterPanel').classList.toggle('open');
+// ── Chapter Modal ──
+function openChapterModal(chId) {
+  editingChapterId = chId || null;
+  const modal = document.getElementById('chModal');
+  const ch = chId ? syllabusChapters.find(c => c._id === chId) : null;
+  document.getElementById('chModalTitle').textContent = ch ? 'Edit Chapter' : 'Add Chapter';
+  document.getElementById('chName').value = ch ? ch.name : '';
+  document.getElementById('chPri').value = ch ? ch.priority : 'High';
+  document.getElementById('chStatus').value = ch ? (ch.status||'pending') : 'pending';
+  document.getElementById('chTargetRead').value = ch ? (ch.targetRead||2) : 2;
+  document.getElementById('chTargetRev').value = ch ? (ch.targetRev||2) : 2;
+  document.getElementById('chTargetMcq').value = ch ? (ch.targetMcq||1) : 1;
+  document.getElementById('chNotes').value = ch ? (ch.notes||'') : '';
+  document.getElementById('chDeleteBtn').style.display = ch ? '' : 'none';
+  modal.style.display = 'flex';
 }
-
-async function addChapter() {
+function closeChapterModal() {
+  document.getElementById('chModal').style.display = 'none';
+  editingChapterId = null;
+}
+async function saveChapterModal() {
   const name = document.getElementById('chName').value.trim();
-  if (!name || !activeSylBookId) { toast('Enter chapter name'); return; }
-  const existing = syllabusChapters.filter(c => c.bookId === activeSylBookId);
-  await addDoc(chaptersCol, {
-    bookId: activeSylBookId,
+  if (!name) { toast('Enter chapter name'); return; }
+  const data = {
     name, priority: document.getElementById('chPri').value,
+    status: document.getElementById('chStatus').value,
     targetRead: parseInt(document.getElementById('chTargetRead').value)||2,
     targetRev: parseInt(document.getElementById('chTargetRev').value)||2,
+    targetMcq: parseInt(document.getElementById('chTargetMcq').value)||1,
     notes: document.getElementById('chNotes').value.trim(),
-    readCount: 0, revCount: 0, mcqDone: false,
-    readDates: [], revDates: [],
-    lastRead: null, lastRev: null,
-    order: existing.length, created: today()
-  });
-  document.getElementById('chName').value = '';
-  document.getElementById('chNotes').value = '';
-  document.getElementById('addChapterPanel').classList.remove('open');
-  toast('Chapter added!');
+  };
+  if (editingChapterId) {
+    await updateDoc(doc(db,'syllabusChapters',editingChapterId), data);
+    toast('Chapter updated!');
+  } else {
+    const existing = syllabusChapters.filter(c => c.bookId === activeSylBookId);
+    await addDoc(chaptersCol, { ...data, bookId: activeSylBookId, readCount:0, revCount:0, mcqCount:0, readDates:[], revDates:[], mcqDates:[], lastRead:null, lastRev:null, lastMcq:null, order: existing.length, created: today() });
+    toast('Chapter added!');
+  }
+  closeChapterModal();
+}
+async function deleteChapterFromModal() {
+  if (!editingChapterId || !confirm('Delete this chapter?')) return;
+  await deleteDoc(doc(db,'syllabusChapters',editingChapterId));
+  closeChapterModal(); toast('Deleted');
 }
 
+// ── Logging ──
 async function logRead(id) {
   const ch = syllabusChapters.find(c => c._id === id); if (!ch) return;
-  const newCount = (ch.readCount||0) + 1;
+  const n = (ch.readCount||0)+1;
   const dates = [...(ch.readDates||[]), today()];
-  await updateDoc(doc(db,'syllabusChapters',id), { readCount: newCount, readDates: dates, lastRead: today() });
-  toast(`Read #${newCount} logged ✓`);
+  const newStatus = n >= (ch.targetRead||2) ? 'done' : 'reading';
+  await updateDoc(doc(db,'syllabusChapters',id), { readCount:n, readDates:dates, lastRead:today(), status:newStatus });
+  toast(`Read #${n} logged ✓`);
 }
-
 async function logRev(id) {
   const ch = syllabusChapters.find(c => c._id === id); if (!ch) return;
-  const newCount = (ch.revCount||0) + 1;
+  const n = (ch.revCount||0)+1;
   const dates = [...(ch.revDates||[]), today()];
-  await updateDoc(doc(db,'syllabusChapters',id), { revCount: newCount, revDates: dates, lastRev: today() });
-  toast(`Revision #${newCount} logged ✓`);
+  await updateDoc(doc(db,'syllabusChapters',id), { revCount:n, revDates:dates, lastRev:today() });
+  toast(`Revision #${n} logged ✓`);
 }
-
-async function toggleMCQ(id) {
+async function logMcq(id) {
   const ch = syllabusChapters.find(c => c._id === id); if (!ch) return;
-  await updateDoc(doc(db,'syllabusChapters',id), { mcqDone: !ch.mcqDone });
+  const n = (ch.mcqCount||0)+1;
+  const dates = [...(ch.mcqDates||[]), today()];
+  await updateDoc(doc(db,'syllabusChapters',id), { mcqCount:n, mcqDates:dates, lastMcq:today() });
+  toast(`MCQ set #${n} logged ✓`);
 }
 
-async function deleteChapter(id) {
-  if (!confirm('Delete this chapter?')) return;
-  await deleteDoc(doc(db,'syllabusChapters',id));
-  toast('Deleted');
-}
-
-async function updateChapterNotes(id, val) {
-  await updateDoc(doc(db,'syllabusChapters',id), { notes: val });
-}
-
-function chStatus(ch) {
-  const r = ch.readCount||0, tr = ch.targetRead||1;
-  if (r === 0) return 'pending';
-  if (r >= tr) return 'done';
-  return 'reading';
-}
-
-function renderSyllabusTable() {
+// ── Cards renderer (minimalist) ──
+function renderSyllabusCards() {
   const book = syllabusBooks.find(b => b._id === activeSylBookId);
   if (!book) return;
   document.getElementById('syllabusBookTitle').textContent = `📖 ${book.name}`;
-
   const chs = syllabusChapters.filter(c => c.bookId === activeSylBookId);
-  const tbody = document.getElementById('syllabusTableBody');
-
-  if (!chs.length) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted)">No chapters yet — add one above</td></tr>`;
-  } else {
-    tbody.innerHTML = chs.map((ch, i) => {
-      const st = chStatus(ch);
-      const stLabel = { done:'✓ Done', reading:'Reading', pending:'Pending' };
-      const stClass = { done:'ch-status-done', reading:'ch-status-reading', pending:'ch-status-pending' };
-      const readBar = `<div style="display:flex;align-items:center;gap:6px">
-        <span style="font-weight:700;color:${(ch.readCount||0)>=(ch.targetRead||1)?'var(--green)':'var(--ink)'}">${ch.readCount||0}/${ch.targetRead||1}</span>
-        <button class="ch-count-btn" onclick="logRead('${ch._id}')">+1 Read</button>
-      </div>`;
-      const revBar = `<div style="display:flex;align-items:center;gap:6px">
-        <span style="font-weight:700;color:${(ch.revCount||0)>=(ch.targetRev||0)?'var(--green)':'var(--ink)'}">${ch.revCount||0}/${ch.targetRev||0}</span>
-        <button class="ch-count-btn" onclick="logRev('${ch._id}')">+1 Rev</button>
-      </div>`;
-      const lastReadBtn = `<button class="log-date-btn ${ch.lastRead?'log-date-filled':''}" onclick="logRead('${ch._id}')">
-        ${ch.lastRead ? fmt(ch.lastRead) : '+ Log date'}</button>`;
-      const lastRevBtn = `<button class="log-date-btn ${ch.lastRev?'log-date-filled':''}" onclick="logRev('${ch._id}')">
-        ${ch.lastRev ? fmt(ch.lastRev) : '+ Log date'}</button>`;
-      return `<tr>
-        <td style="color:var(--muted)">${i+1}</td>
-        <td>
-          <div style="font-weight:600">${esc(ch.name)}</div>
-          <input class="ch-notes-input" value="${esc(ch.notes||'')}" placeholder="notes..." onblur="updateChapterNotes('${ch._id}',this.value)" style="margin-top:4px">
-        </td>
-        <td><span class="ch-pri ch-pri-${ch.priority}">${ch.priority}</span></td>
-        <td>${readBar}</td>
-        <td>${lastReadBtn}</td>
-        <td>${revBar}</td>
-        <td>${lastRevBtn}</td>
-        <td><span class="mcq-badge ${ch.mcqDone?'done-mcq':''}" onclick="toggleMCQ('${ch._id}')">${ch.mcqDone?'✓ Done':'Pending'}</span></td>
-        <td class="${stClass[st]}">${stLabel[st]}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="deleteChapter('${ch._id}')">✕</button></td>
-      </tr>`;
-    }).join('');
-  }
 
   // Summary
-  const total = chs.length;
-  const done = chs.filter(c => chStatus(c)==='done').length;
-  const reading = chs.filter(c => chStatus(c)==='reading').length;
-  const mcqDone = chs.filter(c => c.mcqDone).length;
+  const done = chs.filter(c => c.status==='done').length;
+  const reading = chs.filter(c => c.status==='reading').length;
+  const pend = chs.filter(c => !c.status||c.status==='pending').length;
   document.getElementById('syllabusSummary').innerHTML = `
-    <div class="summary-chip chip-total"><div class="big">${total}</div><div class="lbl">Chapters</div></div>
-    <div class="summary-chip chip-done"><div class="big">${done}</div><div class="lbl">Completed</div></div>
+    <div class="summary-chip chip-total"><div class="big">${chs.length}</div><div class="lbl">Chapters</div></div>
+    <div class="summary-chip chip-done"><div class="big">${done}</div><div class="lbl">Done</div></div>
     <div class="summary-chip chip-prog"><div class="big">${reading}</div><div class="lbl">Reading</div></div>
-    <div class="summary-chip" style=""><div class="big" style="color:var(--purple)">${mcqDone}</div><div class="lbl">MCQ Done</div></div>`;
+    <div class="summary-chip chip-pend"><div class="big">${pend}</div><div class="lbl">Pending</div></div>`;
+
+  if (!chs.length) {
+    document.getElementById('syllabusCards').innerHTML = '<div class="empty-state"><div class="big">No chapters yet</div><div>Click "+ Add Chapter" to start</div></div>';
+    return;
+  }
+
+  const bColor = book.color || 'var(--accent)';
+  document.getElementById('syllabusCards').innerHTML = chs.map((ch, i) => {
+    const st = ch.status || 'pending';
+    const stColors = { done:'var(--green)', reading:'var(--blue)', pending:'var(--muted)' };
+    const stLabels = { done:'✓ Done', reading:'Reading', pending:'Pending' };
+    const priColors = { High:'var(--red)', Medium:'var(--yellow)', Low:'var(--green)' };
+
+    const rDone = ch.readCount||0, rTarget = ch.targetRead||2;
+    const vDone = ch.revCount||0, vTarget = ch.targetRev||2;
+    const mDone = ch.mcqCount||0, mTarget = ch.targetMcq||1;
+    const rPct = Math.min(100, Math.round(rDone/rTarget*100));
+    const vPct = Math.min(100, Math.round(vDone/vTarget*100));
+    const mPct = Math.min(100, Math.round(mDone/mTarget*100));
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${stColors[st]};border-radius:8px;padding:14px 16px;margin-bottom:8px;transition:box-shadow 0.12s" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.3)'" onmouseout="this.style.boxShadow='none'">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="color:var(--muted2);font-size:0.65rem;min-width:22px;padding-top:2px">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+            <span style="font-size:0.85rem;font-weight:600">${esc(ch.name)}</span>
+            <span style="font-size:0.58rem;padding:1px 7px;border-radius:20px;border:1px solid ${priColors[ch.priority]||'var(--muted)'};color:${priColors[ch.priority]||'var(--muted)'}">${ch.priority||'Low'}</span>
+            <span style="font-size:0.62rem;color:${stColors[st]};font-weight:600;margin-left:auto">${stLabels[st]}</span>
+          </div>
+
+          <!-- Three trackers -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+            <!-- Reading -->
+            <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Readings</span>
+                <span style="font-size:0.72rem;font-weight:700;color:${rDone>=rTarget?'var(--green)':'var(--ink)'}">${rDone}/${rTarget}</span>
+              </div>
+              <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
+                <div style="width:${rPct}%;height:100%;background:var(--green);border-radius:2px;transition:width 0.4s"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastRead ? fmt(ch.lastRead) : 'Not read'}</span>
+                <button class="ch-count-btn" onclick="logRead('${ch._id}')">+1</button>
+              </div>
+            </div>
+            <!-- Revision -->
+            <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Revisions</span>
+                <span style="font-size:0.72rem;font-weight:700;color:${vDone>=vTarget?'var(--green)':'var(--ink)'}">${vDone}/${vTarget}</span>
+              </div>
+              <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
+                <div style="width:${vPct}%;height:100%;background:var(--blue);border-radius:2px;transition:width 0.4s"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastRev ? fmt(ch.lastRev) : 'Not revised'}</span>
+                <button class="ch-count-btn" onclick="logRev('${ch._id}')">+1</button>
+              </div>
+            </div>
+            <!-- MCQ -->
+            <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">MCQ Sets</span>
+                <span style="font-size:0.72rem;font-weight:700;color:${mDone>=mTarget?'var(--green)':'var(--ink)'}">${mDone}/${mTarget}</span>
+              </div>
+              <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
+                <div style="width:${mPct}%;height:100%;background:var(--purple);border-radius:2px;transition:width 0.4s"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastMcq ? fmt(ch.lastMcq) : 'No MCQ yet'}</span>
+                <button class="ch-count-btn" onclick="logMcq('${ch._id}')">+1</button>
+              </div>
+            </div>
+          </div>
+
+          ${ch.notes ? `<div style="font-size:0.66rem;color:var(--muted);font-style:italic;margin-top:2px">📝 ${esc(ch.notes)}</div>` : ''}
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openChapterModal('${ch._id}')" title="Edit" style="flex-shrink:0">✏️</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function exportSyllabus() {
   if (!activeSylBookId) return;
   const book = syllabusBooks.find(b => b._id === activeSylBookId);
   const chs = syllabusChapters.filter(c => c.bookId === activeSylBookId);
-  const rows = [['#','Chapter','Priority','Reads','Target Reads','Last Read','Revisions','Target Rev','Last Revised','MCQ','Notes']];
-  chs.forEach((c,i) => rows.push([i+1,c.name,c.priority,c.readCount||0,c.targetRead||1,c.lastRead||'',c.revCount||0,c.targetRev||0,c.lastRev||'',c.mcqDone?'Done':'Pending',c.notes||'']));
+  const rows = [['#','Chapter','Priority','Status','Reads','Target Reads','Last Read','Revisions','Target Rev','Last Revised','MCQ','Target MCQ','Last MCQ','Notes']];
+  chs.forEach((c,i) => rows.push([i+1,c.name,c.priority,c.status||'pending',c.readCount||0,c.targetRead||2,c.lastRead||'',c.revCount||0,c.targetRev||2,c.lastRev||'',c.mcqCount||0,c.targetMcq||1,c.lastMcq||'',c.notes||'']));
   const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download = `${book.name}-syllabus.csv`;
-  a.click(); toast('Exported!');
+  const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download=`${book.name}-syllabus.csv`; a.click(); toast('Exported!');
 }
 
 // ══════════════════════════════════════════════
@@ -1705,8 +1756,8 @@ Object.assign(window, {
   renderWeekly, renderMonthly, shiftWeek, shiftMonth, goToday, exportCSV,
   // Syllabus
   setSbColor, toggleSyllabusAddBook, addSyllabusBook, deleteSyllabusBook,
-  selectBook, toggleAddChapter, addChapter, logRead, logRev, toggleMCQ,
-  deleteChapter, updateChapterNotes, exportSyllabus
+  selectBook, openChapterModal, closeChapterModal, saveChapterModal,
+  deleteChapterFromModal, logRead, logRev, logMcq, exportSyllabus
 });
 </script>
 </body>
