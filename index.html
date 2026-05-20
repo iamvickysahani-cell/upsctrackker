@@ -1010,6 +1010,50 @@ select.filter option { background: var(--surface); }
   </div><!-- /content -->
 </div><!-- /main-wrapper -->
 
+<!-- Quick Add Task Modal -->
+<div id="quickTaskModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:10px;padding:24px;width:min(460px,92vw);box-shadow:var(--shadow);animation:slideDown 0.2s ease">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:4px">📋 Add to Tasks</div>
+    <div style="font-size:0.65rem;color:var(--muted);margin-bottom:18px">Instantly create a task from your syllabus</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input type="hidden" id="qt_chId">
+      <input type="hidden" id="qt_type">
+      <div class="form-group">
+        <label>Task Title</label>
+        <input type="text" id="qt_title">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label>Subject</label>
+          <select id="qt_subject"></select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="qt_pri">
+            <option value="high">🔴 High</option>
+            <option value="med">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" id="qt_due">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="qt_notes">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn btn-primary" onclick="saveQuickTask()">✅ Add to Tasks</button>
+      <button class="btn btn-ghost" onclick="closeQuickTask()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script type="module">
@@ -1207,7 +1251,7 @@ function filterBySub(name) {
 // ══════════════════════════════════════════════
 function populateSubjectSelects() {
   const opts = SUBJECTS.map(s=>`<option value="${s.name}">${s.icon} ${s.name}</option>`).join('');
-  ['newSubject','impSubject','sbSubject'].forEach(id => {
+  ['newSubject','impSubject','sbSubject','qt_subject'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
@@ -1681,9 +1725,12 @@ function renderSyllabusCards() {
               <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
                 <div style="width:${rPct}%;height:100%;background:var(--green);border-radius:2px;transition:width 0.4s"></div>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap">
                 <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastRead ? fmt(ch.lastRead) : 'Not read'}</span>
-                <button class="ch-count-btn" onclick="logRead('${ch._id}')">+1</button>
+                <div style="display:flex;gap:4px">
+                  <button class="ch-count-btn" onclick="logRead('${ch._id}')" title="Log a reading">+1</button>
+                  <button class="ch-count-btn" onclick="quickAddTask('${ch._id}','reading')" title="Add to Tasks" style="background:var(--green-dim);border-color:var(--green);color:var(--green)">📋</button>
+                </div>
               </div>
             </div>
             <!-- Revision -->
@@ -1695,9 +1742,12 @@ function renderSyllabusCards() {
               <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
                 <div style="width:${vPct}%;height:100%;background:var(--blue);border-radius:2px;transition:width 0.4s"></div>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap">
                 <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastRev ? fmt(ch.lastRev) : 'Not revised'}</span>
-                <button class="ch-count-btn" onclick="logRev('${ch._id}')">+1</button>
+                <div style="display:flex;gap:4px">
+                  <button class="ch-count-btn" onclick="logRev('${ch._id}')">+1</button>
+                  <button class="ch-count-btn" onclick="quickAddTask('${ch._id}','revision')" title="Add to Tasks" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue)">📋</button>
+                </div>
               </div>
             </div>
             <!-- MCQ -->
@@ -1709,9 +1759,12 @@ function renderSyllabusCards() {
               <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
                 <div style="width:${mPct}%;height:100%;background:var(--purple);border-radius:2px;transition:width 0.4s"></div>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap">
                 <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastMcq ? fmt(ch.lastMcq) : 'No MCQ yet'}</span>
-                <button class="ch-count-btn" onclick="logMcq('${ch._id}')">+1</button>
+                <div style="display:flex;gap:4px">
+                  <button class="ch-count-btn" onclick="logMcq('${ch._id}')">+1</button>
+                  <button class="ch-count-btn" onclick="quickAddTask('${ch._id}','mcq')" title="Add to Tasks" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple)">📋</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1732,6 +1785,46 @@ function exportSyllabus() {
   chs.forEach((c,i) => rows.push([i+1,c.name,c.priority,c.status||'pending',c.readCount||0,c.targetRead||2,c.lastRead||'',c.revCount||0,c.targetRev||2,c.lastRev||'',c.mcqCount||0,c.targetMcq||1,c.lastMcq||'',c.notes||'']));
   const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download=`${book.name}-syllabus.csv`; a.click(); toast('Exported!');
+}
+
+// ── Quick Add to Tasks ──
+function quickAddTask(chId, type) {
+  const ch = syllabusChapters.find(c => c._id === chId); if (!ch) return;
+  const book = syllabusBooks.find(b => b._id === ch.bookId);
+  const typeLabels = { reading: 'Read', revision: 'Revise', mcq: 'MCQ Practice' };
+  const modal = document.getElementById('quickTaskModal');
+  document.getElementById('qt_title').value = `${typeLabels[type]}: ${ch.name}`;
+  document.getElementById('qt_subject').value = book?.subject || SUBJECTS[0].name;
+  document.getElementById('qt_due').value = today();
+  document.getElementById('qt_pri').value = ch.priority === 'High' ? 'high' : ch.priority === 'Medium' ? 'med' : 'low';
+  document.getElementById('qt_notes').value = `From: ${book?.name || ''}`;
+  document.getElementById('qt_chId').value = chId;
+  document.getElementById('qt_type').value = type;
+  modal.style.display = 'flex';
+}
+
+async function saveQuickTask() {
+  const title = document.getElementById('qt_title').value.trim();
+  if (!title) { toast('Enter a title'); return; }
+  await addDoc(tasksCol, {
+    title,
+    subject: document.getElementById('qt_subject').value,
+    priority: document.getElementById('qt_pri').value,
+    status: 'pending',
+    notes: document.getElementById('qt_notes').value.trim(),
+    due: document.getElementById('qt_due').value,
+    created: today(),
+    completedDate: null,
+    fromSyllabus: true,
+    syllabusChId: document.getElementById('qt_chId').value,
+    syllabusType: document.getElementById('qt_type').value,
+  });
+  document.getElementById('quickTaskModal').style.display = 'none';
+  toast('✅ Added to Tasks!');
+}
+
+function closeQuickTask() {
+  document.getElementById('quickTaskModal').style.display = 'none';
 }
 
 // ══════════════════════════════════════════════
@@ -1757,7 +1850,9 @@ Object.assign(window, {
   // Syllabus
   setSbColor, toggleSyllabusAddBook, addSyllabusBook, deleteSyllabusBook,
   selectBook, openChapterModal, closeChapterModal, saveChapterModal,
-  deleteChapterFromModal, logRead, logRev, logMcq, exportSyllabus
+  deleteChapterFromModal, logRead, logRev, logMcq, exportSyllabus,
+  // Quick Task
+  quickAddTask, saveQuickTask, closeQuickTask
 });
 </script>
 </body>
