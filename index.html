@@ -1197,7 +1197,7 @@ function filterBySub(name) {
 // ══════════════════════════════════════════════
 function populateSubjectSelects() {
   const opts = SUBJECTS.map(s=>`<option value="${s.name}">${s.icon} ${s.name}</option>`).join('');
-  ['newSubject','impSubject'].forEach(id => {
+  ['newSubject','impSubject','sbSubject'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
