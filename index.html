@@ -577,6 +577,84 @@ select.filter option { background: var(--surface); }
   .content { padding: 16px; }
   .topbar { padding: 12px 16px; }
 }
+/* ══ SYLLABUS ══ */
+.color-dot {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: transform 0.1s, border-color 0.1s; flex-shrink: 0;
+}
+.color-dot:hover { transform: scale(1.2); }
+.active-dot { border-color: var(--ink) !important; transform: scale(1.15); }
+
+.book-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: all 0.12s;
+  border-left: 4px solid var(--accent);
+}
+.book-card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+.book-card.active-book { background: var(--surface2); }
+.book-card-name { font-size: 0.82rem; font-weight: 600; flex: 1; }
+.book-card-sub { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+.book-card-pct { font-size: 1rem; font-weight: 700; font-family: var(--font-display); }
+
+.syl-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.72rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.syl-table th {
+  background: var(--surface2); padding: 10px 12px;
+  text-align: left; font-size: 0.58rem; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted); border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.syl-table td {
+  padding: 9px 12px; border-bottom: 1px solid var(--border);
+  vertical-align: middle; color: var(--ink);
+}
+.syl-table tr:last-child td { border-bottom: none; }
+.syl-table tr:hover td { background: var(--surface2); }
+
+.ch-pri { padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; }
+.ch-pri-High { background: var(--red-dim); color: var(--red); }
+.ch-pri-Medium { background: #e3b34122; color: var(--yellow); }
+.ch-pri-Low { background: var(--green-dim); color: var(--green); }
+
+.ch-count-btn {
+  background: var(--surface3); border: 1px solid var(--border);
+  color: var(--ink); font-family: var(--font-mono); font-size: 0.65rem;
+  padding: 3px 7px; border-radius: 4px; cursor: pointer; transition: all 0.1s;
+}
+.ch-count-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.ch-status-done { color: var(--green); font-weight: 700; }
+.ch-status-reading { color: var(--blue); }
+.ch-status-pending { color: var(--muted); }
+
+.log-date-btn {
+  background: none; border: 1px dashed var(--border2); color: var(--muted);
+  font-family: var(--font-mono); font-size: 0.58rem; padding: 3px 7px;
+  border-radius: 4px; cursor: pointer; transition: all 0.1s; white-space: nowrap;
+}
+.log-date-btn:hover { border-color: var(--accent); color: var(--accent); }
+.log-date-filled { border-style: solid; color: var(--ink); background: var(--surface2); }
+
+.ch-notes-input {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 8px;
+  border-radius: 4px; width: 100%; outline: none;
+}
+.ch-notes-input:focus { border-color: var(--accent); }
+
+.mcq-badge {
+  background: var(--purple-dim); color: var(--purple);
+  padding: 2px 7px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;
+  cursor: pointer;
+}
+.mcq-badge.done-mcq { background: var(--green-dim); color: var(--green); }
 </style>
 </head>
 <body>
@@ -611,11 +689,14 @@ select.filter option { background: var(--surface); }
   <button class="nav-item" data-tab="monthly" onclick="switchTab('monthly', this)">
     <span class="nav-icon">🗓</span> Monthly
   </button>
+  <button class="nav-item" data-tab="syllabus" onclick="switchTab('syllabus', this)">
+    <span class="nav-icon">📚</span> Syllabus
+  </button>
 
   <div class="sidebar-section-label" style="margin-top:8px">Subjects</div>
   <div class="sidebar-subjects" id="sidebarSubjects"></div>
 
-  <div class="sidebar-footer">upsc-tracker · local storage</div>
+  <div class="sidebar-footer">upsc-tracker · firebase sync</div>
 </aside>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
@@ -809,6 +890,113 @@ select.filter option { background: var(--surface); }
       <div class="task-list" id="monthlyList"></div>
     </div>
 
+    <!-- ══ SYLLABUS TAB ══ -->
+    <div id="tab-syllabus" style="display:none">
+
+      <!-- Book/Subject Manager -->
+      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px">
+        <div style="flex:1;min-width:260px">
+          <div class="section-title">My Syllabus Books</div>
+          <div id="syllabusBookList" style="display:flex;flex-direction:column;gap:8px"></div>
+          <button class="btn btn-primary" style="margin-top:10px" onclick="toggleSyllabusAddBook()">+ Add Book / Subject</button>
+          <div class="add-panel" id="syllabusAddBook" style="margin-top:10px;flex-direction:column;gap:10px">
+            <div class="form-group">
+              <label>Book / Subject Name *</label>
+              <input type="text" id="sbName" placeholder="e.g. India's Ancient Past by R.S. Sharma" style="min-width:240px">
+            </div>
+            <div class="form-group">
+              <label>Subject Category</label>
+              <select id="sbSubject"></select>
+            </div>
+            <div class="form-group">
+              <label>Color Tag</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;padding:4px 0" id="sbColorPicker">
+                <span class="color-dot active-dot" data-c="#e07b54" style="background:#e07b54" onclick="setSbColor('#e07b54',this)"></span>
+                <span class="color-dot" data-c="#3fb950" style="background:#3fb950" onclick="setSbColor('#3fb950',this)"></span>
+                <span class="color-dot" data-c="#58a6ff" style="background:#58a6ff" onclick="setSbColor('#58a6ff',this)"></span>
+                <span class="color-dot" data-c="#bc8cff" style="background:#bc8cff" onclick="setSbColor('#bc8cff',this)"></span>
+                <span class="color-dot" data-c="#d4a017" style="background:#d4a017" onclick="setSbColor('#d4a017',this)"></span>
+                <span class="color-dot" data-c="#f78166" style="background:#f78166" onclick="setSbColor('#f78166',this)"></span>
+                <span class="color-dot" data-c="#39c5cf" style="background:#39c5cf" onclick="setSbColor('#39c5cf',this)"></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="addSyllabusBook()">Save Book</button>
+              <button class="btn btn-ghost" onclick="toggleSyllabusAddBook()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter Table -->
+      <div id="syllabusChapterSection" style="display:none">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+          <div class="section-title" id="syllabusBookTitle" style="margin-bottom:0;flex:1">Chapters</div>
+          <button class="btn btn-primary btn-sm" onclick="toggleAddChapter()">+ Add Chapter</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportSyllabus()">↓ Export</button>
+        </div>
+
+        <!-- Add Chapter Panel -->
+        <div class="add-panel" id="addChapterPanel" style="flex-direction:column;gap:10px;margin-bottom:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="form-group">
+              <label>Chapter Name *</label>
+              <input type="text" id="chName" placeholder="e.g. Harappan Cultures" style="min-width:220px">
+            </div>
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="chPri">
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Target Readings</label>
+              <input type="number" id="chTargetRead" value="2" min="1" max="10" style="width:80px">
+            </div>
+            <div class="form-group">
+              <label>Target Revisions</label>
+              <input type="number" id="chTargetRev" value="2" min="0" max="10" style="width:80px">
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <input type="text" id="chNotes" placeholder="Optional..." style="min-width:160px">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="addChapter()">Save Chapter</button>
+            <button class="btn btn-ghost" onclick="toggleAddChapter()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Chapter Table -->
+        <div style="overflow-x:auto">
+          <table class="syl-table" id="syllabusTable">
+            <thead>
+              <tr>
+                <th style="width:40px">#</th>
+                <th>Chapter</th>
+                <th style="width:90px">Priority</th>
+                <th style="width:110px">Readings</th>
+                <th style="width:160px">Last Read</th>
+                <th style="width:110px">Revisions</th>
+                <th style="width:160px">Last Revised</th>
+                <th style="width:80px">MCQ</th>
+                <th style="width:90px">Status</th>
+                <th style="width:60px">Act</th>
+              </tr>
+            </thead>
+            <tbody id="syllabusTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="summary-row" id="syllabusSummary" style="margin-top:16px"></div>
+      </div>
+
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main-wrapper -->
 
@@ -941,7 +1129,7 @@ function toast(msg) {
 // ══════════════════════════════════════════════
 // SIDEBAR & TABS
 // ══════════════════════════════════════════════
-const TAB_TITLES = { tasks:'Tasks', importance:'Chapter & Topic Importance', progress:'Progress', daily:'Daily View', weekly:'Weekly View', monthly:'Monthly View' };
+const TAB_TITLES = { tasks:'Tasks', importance:'Chapter & Topic Importance', progress:'Progress', daily:'Daily View', weekly:'Weekly View', monthly:'Monthly View', syllabus:'Syllabus Tracker' };
 
 function reRenderCurrentTab() {
   if (currentTab==='tasks') renderTasks();
@@ -949,13 +1137,14 @@ function reRenderCurrentTab() {
   else if (currentTab==='daily') renderDaily();
   else if (currentTab==='weekly') renderWeekly();
   else if (currentTab==='monthly') renderMonthly();
+  else if (currentTab==='syllabus') { renderSyllabusBooks(); renderSyllabusTable(); }
 }
 
 function switchTab(name, el) {
   currentTab = name;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if (el) el.classList.add('active');
-  ['tasks','importance','progress','daily','weekly','monthly'].forEach(t => {
+  ['tasks','importance','progress','daily','weekly','monthly','syllabus'].forEach(t => {
     document.getElementById('tab-'+t).style.display = t===name ? '' : 'none';
   });
   document.getElementById('topbarTitle').textContent = TAB_TITLES[name] || name;
@@ -965,6 +1154,7 @@ function switchTab(name, el) {
   if (name==='daily') renderDaily();
   if (name==='weekly') renderWeekly();
   if (name==='monthly') renderMonthly();
+  if (name==='syllabus') { populateSubjectSelects(); renderSyllabusBooks(); if(activeSylBookId) renderSyllabusTable(); }
   closeSidebar();
 }
 
@@ -1276,6 +1466,224 @@ function exportCSV() {
 }
 
 // ══════════════════════════════════════════════
+// SYLLABUS
+// ══════════════════════════════════════════════
+const syllabusCol  = collection(db, 'syllabusBooks');
+const chaptersCol  = collection(db, 'syllabusChapters');
+
+let syllabusBooks    = [];
+let syllabusChapters = [];
+let activeSylBookId  = null;
+let sbColor          = '#e07b54';
+
+onSnapshot(query(syllabusCol, orderBy('created','asc')), snap => {
+  syllabusBooks = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+  if (currentTab === 'syllabus') renderSyllabusBooks();
+});
+onSnapshot(query(chaptersCol, orderBy('order','asc')), snap => {
+  syllabusChapters = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+  if (currentTab === 'syllabus') renderSyllabusTable();
+});
+
+function setSbColor(c, el) {
+  sbColor = c;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active-dot'));
+  el.classList.add('active-dot');
+}
+
+function toggleSyllabusAddBook() {
+  const p = document.getElementById('syllabusAddBook');
+  p.classList.toggle('open');
+}
+
+async function addSyllabusBook() {
+  const name = document.getElementById('sbName').value.trim();
+  if (!name) { toast('Enter a book name'); return; }
+  await addDoc(syllabusCol, {
+    name, subject: document.getElementById('sbSubject').value,
+    color: sbColor, created: today()
+  });
+  document.getElementById('sbName').value = '';
+  document.getElementById('syllabusAddBook').classList.remove('open');
+  toast('Book added!');
+}
+
+async function deleteSyllabusBook(id) {
+  if (!confirm('Delete this book and ALL its chapters?')) return;
+  await deleteDoc(doc(db,'syllabusBooks',id));
+  // delete chapters
+  const toDelete = syllabusChapters.filter(c => c.bookId === id);
+  await Promise.all(toDelete.map(c => deleteDoc(doc(db,'syllabusChapters',c._id))));
+  activeSylBookId = null;
+  document.getElementById('syllabusChapterSection').style.display = 'none';
+  toast('Book deleted');
+}
+
+function renderSyllabusBooks() {
+  const el = document.getElementById('syllabusBookList');
+  if (!syllabusBooks.length) {
+    el.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:8px 0">No books yet. Add one below.</div>';
+    return;
+  }
+  el.innerHTML = syllabusBooks.map(b => {
+    const chs = syllabusChapters.filter(c => c.bookId === b._id);
+    const done = chs.filter(c => (c.readCount||0) >= (c.targetRead||1)).length;
+    const pct = chs.length ? Math.round(done/chs.length*100) : 0;
+    return `<div class="book-card ${activeSylBookId===b._id?'active-book':''}" style="border-left-color:${b.color||'var(--accent)'}" onclick="selectBook('${b._id}')">
+      <div style="flex:1">
+        <div class="book-card-name">${esc(b.name)}</div>
+        <div class="book-card-sub">${b.subject} · ${chs.length} chapters · ${done} read</div>
+        <div style="height:3px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${b.color||'var(--accent)'};border-radius:2px"></div>
+        </div>
+      </div>
+      <div class="book-card-pct" style="color:${b.color||'var(--accent)'}">${pct}%</div>
+      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteSyllabusBook('${b._id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function selectBook(id) {
+  activeSylBookId = id;
+  renderSyllabusBooks();
+  renderSyllabusTable();
+  document.getElementById('syllabusChapterSection').style.display = '';
+}
+
+function toggleAddChapter() {
+  document.getElementById('addChapterPanel').classList.toggle('open');
+}
+
+async function addChapter() {
+  const name = document.getElementById('chName').value.trim();
+  if (!name || !activeSylBookId) { toast('Enter chapter name'); return; }
+  const existing = syllabusChapters.filter(c => c.bookId === activeSylBookId);
+  await addDoc(chaptersCol, {
+    bookId: activeSylBookId,
+    name, priority: document.getElementById('chPri').value,
+    targetRead: parseInt(document.getElementById('chTargetRead').value)||2,
+    targetRev: parseInt(document.getElementById('chTargetRev').value)||2,
+    notes: document.getElementById('chNotes').value.trim(),
+    readCount: 0, revCount: 0, mcqDone: false,
+    readDates: [], revDates: [],
+    lastRead: null, lastRev: null,
+    order: existing.length, created: today()
+  });
+  document.getElementById('chName').value = '';
+  document.getElementById('chNotes').value = '';
+  document.getElementById('addChapterPanel').classList.remove('open');
+  toast('Chapter added!');
+}
+
+async function logRead(id) {
+  const ch = syllabusChapters.find(c => c._id === id); if (!ch) return;
+  const newCount = (ch.readCount||0) + 1;
+  const dates = [...(ch.readDates||[]), today()];
+  await updateDoc(doc(db,'syllabusChapters',id), { readCount: newCount, readDates: dates, lastRead: today() });
+  toast(`Read #${newCount} logged ✓`);
+}
+
+async function logRev(id) {
+  const ch = syllabusChapters.find(c => c._id === id); if (!ch) return;
+  const newCount = (ch.revCount||0) + 1;
+  const dates = [...(ch.revDates||[]), today()];
+  await updateDoc(doc(db,'syllabusChapters',id), { revCount: newCount, revDates: dates, lastRev: today() });
+  toast(`Revision #${newCount} logged ✓`);
+}
+
+async function toggleMCQ(id) {
+  const ch = syllabusChapters.find(c => c._id === id); if (!ch) return;
+  await updateDoc(doc(db,'syllabusChapters',id), { mcqDone: !ch.mcqDone });
+}
+
+async function deleteChapter(id) {
+  if (!confirm('Delete this chapter?')) return;
+  await deleteDoc(doc(db,'syllabusChapters',id));
+  toast('Deleted');
+}
+
+async function updateChapterNotes(id, val) {
+  await updateDoc(doc(db,'syllabusChapters',id), { notes: val });
+}
+
+function chStatus(ch) {
+  const r = ch.readCount||0, tr = ch.targetRead||1;
+  if (r === 0) return 'pending';
+  if (r >= tr) return 'done';
+  return 'reading';
+}
+
+function renderSyllabusTable() {
+  const book = syllabusBooks.find(b => b._id === activeSylBookId);
+  if (!book) return;
+  document.getElementById('syllabusBookTitle').textContent = `📖 ${book.name}`;
+
+  const chs = syllabusChapters.filter(c => c.bookId === activeSylBookId);
+  const tbody = document.getElementById('syllabusTableBody');
+
+  if (!chs.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted)">No chapters yet — add one above</td></tr>`;
+  } else {
+    tbody.innerHTML = chs.map((ch, i) => {
+      const st = chStatus(ch);
+      const stLabel = { done:'✓ Done', reading:'Reading', pending:'Pending' };
+      const stClass = { done:'ch-status-done', reading:'ch-status-reading', pending:'ch-status-pending' };
+      const readBar = `<div style="display:flex;align-items:center;gap:6px">
+        <span style="font-weight:700;color:${(ch.readCount||0)>=(ch.targetRead||1)?'var(--green)':'var(--ink)'}">${ch.readCount||0}/${ch.targetRead||1}</span>
+        <button class="ch-count-btn" onclick="logRead('${ch._id}')">+1 Read</button>
+      </div>`;
+      const revBar = `<div style="display:flex;align-items:center;gap:6px">
+        <span style="font-weight:700;color:${(ch.revCount||0)>=(ch.targetRev||0)?'var(--green)':'var(--ink)'}">${ch.revCount||0}/${ch.targetRev||0}</span>
+        <button class="ch-count-btn" onclick="logRev('${ch._id}')">+1 Rev</button>
+      </div>`;
+      const lastReadBtn = `<button class="log-date-btn ${ch.lastRead?'log-date-filled':''}" onclick="logRead('${ch._id}')">
+        ${ch.lastRead ? fmt(ch.lastRead) : '+ Log date'}</button>`;
+      const lastRevBtn = `<button class="log-date-btn ${ch.lastRev?'log-date-filled':''}" onclick="logRev('${ch._id}')">
+        ${ch.lastRev ? fmt(ch.lastRev) : '+ Log date'}</button>`;
+      return `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td>
+          <div style="font-weight:600">${esc(ch.name)}</div>
+          <input class="ch-notes-input" value="${esc(ch.notes||'')}" placeholder="notes..." onblur="updateChapterNotes('${ch._id}',this.value)" style="margin-top:4px">
+        </td>
+        <td><span class="ch-pri ch-pri-${ch.priority}">${ch.priority}</span></td>
+        <td>${readBar}</td>
+        <td>${lastReadBtn}</td>
+        <td>${revBar}</td>
+        <td>${lastRevBtn}</td>
+        <td><span class="mcq-badge ${ch.mcqDone?'done-mcq':''}" onclick="toggleMCQ('${ch._id}')">${ch.mcqDone?'✓ Done':'Pending'}</span></td>
+        <td class="${stClass[st]}">${stLabel[st]}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="deleteChapter('${ch._id}')">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Summary
+  const total = chs.length;
+  const done = chs.filter(c => chStatus(c)==='done').length;
+  const reading = chs.filter(c => chStatus(c)==='reading').length;
+  const mcqDone = chs.filter(c => c.mcqDone).length;
+  document.getElementById('syllabusSummary').innerHTML = `
+    <div class="summary-chip chip-total"><div class="big">${total}</div><div class="lbl">Chapters</div></div>
+    <div class="summary-chip chip-done"><div class="big">${done}</div><div class="lbl">Completed</div></div>
+    <div class="summary-chip chip-prog"><div class="big">${reading}</div><div class="lbl">Reading</div></div>
+    <div class="summary-chip" style=""><div class="big" style="color:var(--purple)">${mcqDone}</div><div class="lbl">MCQ Done</div></div>`;
+}
+
+function exportSyllabus() {
+  if (!activeSylBookId) return;
+  const book = syllabusBooks.find(b => b._id === activeSylBookId);
+  const chs = syllabusChapters.filter(c => c.bookId === activeSylBookId);
+  const rows = [['#','Chapter','Priority','Reads','Target Reads','Last Read','Revisions','Target Rev','Last Revised','MCQ','Notes']];
+  chs.forEach((c,i) => rows.push([i+1,c.name,c.priority,c.readCount||0,c.targetRead||1,c.lastRead||'',c.revCount||0,c.targetRev||0,c.lastRev||'',c.mcqDone?'Done':'Pending',c.notes||'']));
+  const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = `${book.name}-syllabus.csv`;
+  a.click(); toast('Exported!');
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 (function init() {
@@ -1294,7 +1702,11 @@ Object.assign(window, {
   toggleAdd, addTask, toggleDone, cycleStatus, deleteTask,
   setImpType, setImpStars, addImpEntry, deleteImpEntry, updateImpStars,
   renderImportance, renderTasks, renderProgress, renderDaily,
-  renderWeekly, renderMonthly, shiftWeek, shiftMonth, goToday, exportCSV
+  renderWeekly, renderMonthly, shiftWeek, shiftMonth, goToday, exportCSV,
+  // Syllabus
+  setSbColor, toggleSyllabusAddBook, addSyllabusBook, deleteSyllabusBook,
+  selectBook, toggleAddChapter, addChapter, logRead, logRev, toggleMCQ,
+  deleteChapter, updateChapterNotes, exportSyllabus
 });
 </script>
 </body>
