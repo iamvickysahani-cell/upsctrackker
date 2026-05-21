@@ -1163,6 +1163,9 @@ onSnapshot(query(subjectsCol, orderBy('order','asc')), async snap => {
     if (currentTab === 'settings') renderSettingsSubjects();
   }
 });
+
+// Listen to tasks collection — syncs instantly across all devices
+onSnapshot(query(tasksCol, orderBy('created', 'asc')), snap => {
   tasks = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
   setStatus('● Live', true);
   reRenderCurrentTab();
