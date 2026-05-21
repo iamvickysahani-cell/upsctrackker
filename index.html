@@ -701,6 +701,9 @@ select.filter option { background: var(--surface); }
   <button class="nav-item" data-tab="syllabus" onclick="switchTab('syllabus', this)">
     <span class="nav-icon">📚</span> Syllabus
   </button>
+  <button class="nav-item" data-tab="settings" onclick="switchTab('settings', this)">
+    <span class="nav-icon">⚙️</span> Settings
+  </button>
 
   <div class="sidebar-section-label" style="margin-top:8px">Subjects</div>
   <div class="sidebar-subjects" id="sidebarSubjects"></div>
@@ -1007,6 +1010,36 @@ select.filter option { background: var(--surface); }
       </div>
     </div>
 
+    <!-- ══ SETTINGS TAB ══ -->
+    <div id="tab-settings" style="display:none">
+      <div class="section-title">⚙️ Manage Subjects</div>
+      <p style="font-size:0.72rem;color:var(--muted);margin-bottom:20px;line-height:1.6">Add, edit or delete subjects. These appear everywhere — Tasks, Syllabus, Importance, filters.</p>
+
+      <!-- Add Subject Form -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:8px;padding:18px;margin-bottom:20px">
+        <div style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin-bottom:14px">➕ Add New Subject</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+          <div class="form-group">
+            <label>Subject Name *</label>
+            <input type="text" id="newSubName" placeholder="e.g. Indian Economy" style="min-width:180px">
+          </div>
+          <div class="form-group">
+            <label>Icon (emoji)</label>
+            <input type="text" id="newSubIcon" placeholder="💹" style="width:70px;text-align:center;font-size:1.2rem">
+          </div>
+          <div class="form-group">
+            <label>Color</label>
+            <input type="color" id="newSubColor" value="#d4a017" style="width:50px;height:36px;padding:2px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer">
+          </div>
+          <button class="btn btn-primary" onclick="addSubject()">Add Subject</button>
+        </div>
+      </div>
+
+      <!-- Subjects List -->
+      <div class="section-title">Current Subjects</div>
+      <div id="settingsSubjectList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main-wrapper -->
 
@@ -1085,17 +1118,23 @@ const tasksCol = collection(db, 'tasks');
 const impCol   = collection(db, 'importance');
 
 // ══════════════════════════════════════════════
-// DATA
+// DATA  
 // ══════════════════════════════════════════════
-const SUBJECTS = [
-  { name: 'History',         icon: '🏛️', color: '#e07b54' },
-  { name: 'Geography',       icon: '🌍', color: '#3fb950' },
-  { name: 'Polity',          icon: '⚖️', color: '#58a6ff' },
-  { name: 'Maths',           icon: '📐', color: '#bc8cff' },
-  { name: 'English',         icon: '📖', color: '#d4a017' },
-  { name: 'Reasoning',       icon: '🧩', color: '#f78166' },
-  { name: 'English Grammar', icon: '✏️', color: '#39c5cf' },
+const DEFAULT_SUBJECTS = [
+  { name: 'History',         icon: '🏛️', color: '#e07b54', order: 0 },
+  { name: 'Geography',       icon: '🌍', color: '#3fb950', order: 1 },
+  { name: 'Polity',          icon: '⚖️', color: '#58a6ff', order: 2 },
+  { name: 'Economy',         icon: '💹', color: '#d4a017', order: 3 },
+  { name: 'Maths',           icon: '📐', color: '#bc8cff', order: 4 },
+  { name: 'English',         icon: '📖', color: '#f78166', order: 5 },
+  { name: 'Reasoning',       icon: '🧩', color: '#39c5cf', order: 6 },
+  { name: 'English Grammar', icon: '✏️', color: '#58a6ff', order: 7 },
+  { name: 'Science & Tech',  icon: '🔬', color: '#3fb950', order: 8 },
+  { name: 'Environment',     icon: '🌿', color: '#2ea043', order: 9 },
+  { name: 'Current Affairs', icon: '📰', color: '#e07b54', order: 10 },
 ];
+let SUBJECTS = [...DEFAULT_SUBJECTS];
+const subjectsCol = collection(db, 'subjects');
 
 let tasks = [];
 let impEntries = [];
@@ -1113,8 +1152,17 @@ function setStatus(msg, ok = false) {
   el.style.color = ok ? 'var(--green)' : 'var(--yellow)';
 }
 
-// Listen to tasks collection — syncs instantly across all devices
-onSnapshot(query(tasksCol, orderBy('created', 'asc')), snap => {
+// Listen to subjects — syncs across devices
+onSnapshot(query(subjectsCol, orderBy('order','asc')), async snap => {
+  if (snap.empty) {
+    for (const s of DEFAULT_SUBJECTS) await addDoc(subjectsCol, s);
+  } else {
+    SUBJECTS = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+    populateSubjectSelects();
+    renderSidebarSubjects();
+    if (currentTab === 'settings') renderSettingsSubjects();
+  }
+});
   tasks = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
   setStatus('● Live', true);
   reRenderCurrentTab();
@@ -1183,7 +1231,7 @@ function toast(msg) {
 // ══════════════════════════════════════════════
 // SIDEBAR & TABS
 // ══════════════════════════════════════════════
-const TAB_TITLES = { tasks:'Tasks', importance:'Chapter & Topic Importance', progress:'Progress', daily:'Daily View', weekly:'Weekly View', monthly:'Monthly View', syllabus:'Syllabus Tracker' };
+const TAB_TITLES = { tasks:'Tasks', importance:'Chapter & Topic Importance', progress:'Progress', daily:'Daily View', weekly:'Weekly View', monthly:'Monthly View', syllabus:'Syllabus Tracker', settings:'Settings' };
 
 function reRenderCurrentTab() {
   if (currentTab==='tasks') renderTasks();
@@ -1198,7 +1246,7 @@ function switchTab(name, el) {
   currentTab = name;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if (el) el.classList.add('active');
-  ['tasks','importance','progress','daily','weekly','monthly','syllabus'].forEach(t => {
+  ['tasks','importance','progress','daily','weekly','monthly','syllabus','settings'].forEach(t => {
     document.getElementById('tab-'+t).style.display = t===name ? '' : 'none';
   });
   document.getElementById('topbarTitle').textContent = TAB_TITLES[name] || name;
@@ -1209,6 +1257,7 @@ function switchTab(name, el) {
   if (name==='weekly') renderWeekly();
   if (name==='monthly') renderMonthly();
   if (name==='syllabus') { populateSubjectSelects(); renderSyllabusBooks(); if(activeSylBookId) renderSyllabusTable(); }
+  if (name==='settings') renderSettingsSubjects();
   closeSidebar();
 }
 
@@ -1770,11 +1819,174 @@ function renderSyllabusCards() {
           </div>
 
           ${ch.notes ? `<div style="font-size:0.66rem;color:var(--muted);font-style:italic;margin-top:2px">📝 ${esc(ch.notes)}</div>` : ''}
+
+          <!-- Subtopics toggle -->
+          <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+            <button onclick="toggleSubtopics('${ch._id}')" style="background:none;border:none;color:var(--muted);font-family:var(--font-mono);font-size:0.65rem;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0" id="stBtn-${ch._id}">
+              <span id="stArrow-${ch._id}">▶</span> Key Concepts & Subtopics
+              <span id="stCount-${ch._id}" style="background:var(--surface3);border-radius:10px;padding:1px 7px;font-size:0.58rem;color:var(--accent)">0</span>
+            </button>
+            <div id="stPanel-${ch._id}" style="display:none;margin-top:10px"></div>
+          </div>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="openChapterModal('${ch._id}')" title="Edit" style="flex-shrink:0">✏️</button>
       </div>
     </div>`;
   }).join('');
+}
+
+// ══════════════════════════════════════════════
+// SUBTOPICS
+// ══════════════════════════════════════════════
+const subtopicsCol = collection(db, 'subtopics');
+let subtopics = [];
+let openSubPanels = new Set(); // track which chapters are expanded
+
+onSnapshot(query(subtopicsCol, orderBy('created','asc')), snap => {
+  subtopics = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+  // update counts on visible cards
+  subtopics.reduce((acc, s) => { acc[s.chapterId] = (acc[s.chapterId]||0)+1; return acc; }, {});
+  document.querySelectorAll('[id^="stCount-"]').forEach(el => {
+    const chId = el.id.replace('stCount-','');
+    const count = subtopics.filter(s => s.chapterId === chId).length;
+    el.textContent = count;
+    el.style.background = count ? 'var(--accent-dim)' : 'var(--surface3)';
+    el.style.color = count ? 'var(--accent)' : 'var(--muted2)';
+  });
+  // re-render open panels
+  openSubPanels.forEach(chId => renderSubtopicPanel(chId));
+});
+
+const SUBTOPIC_TYPES = [
+  { value:'concept',   label:'💡 Key Concept',    color:'var(--blue)' },
+  { value:'table',     label:'📊 Important Table', color:'var(--purple)' },
+  { value:'date',      label:'📅 Important Date',  color:'var(--gold)' },
+  { value:'term',      label:'📖 Term/Definition', color:'var(--green)' },
+  { value:'fact',      label:'⚡ Quick Fact',      color:'var(--accent)' },
+  { value:'formula',   label:'🔢 Formula',         color:'var(--red)' },
+  { value:'person',    label:'👤 Person/Figure',   color:'#39c5cf' },
+  { value:'place',     label:'📍 Place/Location',  color:'#f78166' },
+];
+
+function stTypeInfo(val) { return SUBTOPIC_TYPES.find(t=>t.value===val) || SUBTOPIC_TYPES[0]; }
+
+function toggleSubtopics(chId) {
+  const panel = document.getElementById(`stPanel-${chId}`);
+  const arrow = document.getElementById(`stArrow-${chId}`);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : '';
+  arrow.textContent = isOpen ? '▶' : '▼';
+  if (!isOpen) { openSubPanels.add(chId); renderSubtopicPanel(chId); }
+  else openSubPanels.delete(chId);
+}
+
+function renderSubtopicPanel(chId) {
+  const panel = document.getElementById(`stPanel-${chId}`);
+  if (!panel || panel.style.display === 'none') return;
+  const subs = subtopics.filter(s => s.chapterId === chId).sort((a,b) => {
+    const order = ['concept','table','date','term','fact','formula','person','place'];
+    return order.indexOf(a.type) - order.indexOf(b.type);
+  });
+
+  const typeOpts = SUBTOPIC_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+
+  panel.innerHTML = `
+    <!-- Add subtopic form -->
+    <div style="background:var(--surface2);border-radius:6px;padding:10px;margin-bottom:10px">
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">➕ Add Concept / Subtopic</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:140px">
+          <label style="font-size:0.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Title *</label>
+          <input type="text" id="st_title_${chId}" placeholder="e.g. Indus Valley Sites" style="background:var(--surface);border:1px solid var(--border);color:var(--ink);font-family:var(--font-mono);font-size:0.72rem;padding:6px 10px;border-radius:5px;outline:none">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:130px">
+          <label style="font-size:0.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Type</label>
+          <select id="st_type_${chId}" style="background:var(--surface);border:1px solid var(--border);color:var(--ink);font-family:var(--font-mono);font-size:0.7rem;padding:6px 8px;border-radius:5px;outline:none">${typeOpts}</select>
+        </div>
+        <button onclick="addSubtopic('${chId}')" style="background:var(--accent);color:#fff;border:none;font-family:var(--font-mono);font-size:0.65rem;font-weight:600;padding:7px 14px;border-radius:5px;cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:0.8px">+ Add</button>
+      </div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:0.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Content / Notes</label>
+        <textarea id="st_content_${chId}" placeholder="Write key points, tables, formulas, dates..." style="background:var(--surface);border:1px solid var(--border);color:var(--ink);font-family:var(--font-mono);font-size:0.7rem;padding:8px 10px;border-radius:5px;outline:none;resize:vertical;min-height:60px;width:100%"></textarea>
+      </div>
+    </div>
+
+    <!-- Filter by type -->
+    ${subs.length > 3 ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <button onclick="filterSubtopics('${chId}','')" id="stf_all_${chId}" style="font-size:0.58rem;padding:2px 8px;border-radius:20px;border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);cursor:pointer;font-family:var(--font-mono)">All</button>
+      ${SUBTOPIC_TYPES.map(t=>`<button onclick="filterSubtopics('${chId}','${t.value}')" style="font-size:0.58rem;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:var(--font-mono);background:none">${t.label}</button>`).join('')}
+    </div>` : ''}
+
+    <!-- Subtopic items -->
+    <div id="stItems-${chId}">
+      ${subs.length ? subs.map(s => subtopicHTML(s)).join('') :
+        '<div style="font-size:0.68rem;color:var(--muted);text-align:center;padding:12px">No subtopics yet — add key concepts above</div>'}
+    </div>`;
+}
+
+function subtopicHTML(s) {
+  const t = stTypeInfo(s.type);
+  return `<div id="stItem-${s._id}" style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${t.color};border-radius:6px;padding:10px 12px;margin-bottom:6px;animation:taskIn 0.15s ease">
+    <div style="display:flex;align-items:flex-start;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+          <span style="font-size:0.58rem;padding:1px 7px;border-radius:20px;background:${t.color}22;color:${t.color};font-weight:600">${t.label}</span>
+          ${s.learned ? `<span style="font-size:0.55rem;color:var(--green);font-weight:600">✓ Learned</span>` : ''}
+        </div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--ink);margin-bottom:3px">${esc(s.title)}</div>
+        ${s.content ? `<div style="font-size:0.7rem;color:var(--muted);line-height:1.6;white-space:pre-wrap">${esc(s.content)}</div>` : ''}
+        <div style="font-size:0.58rem;color:var(--muted2);margin-top:4px">Added ${fmt(s.created)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+        <button onclick="toggleLearnedSt('${s._id}')" title="${s.learned?'Mark unlearned':'Mark learned'}" style="background:${s.learned?'var(--green-dim)':'var(--surface2)'};border:1px solid ${s.learned?'var(--green)':'var(--border)'};color:${s.learned?'var(--green)':'var(--muted)'};font-size:0.65rem;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--font-mono)">
+          ${s.learned ? '✓' : 'Learn'}
+        </button>
+        <button onclick="editSubtopic('${s._id}')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:0.65rem;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--font-mono)">✏️</button>
+        <button onclick="deleteSubtopic('${s._id}')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:0.65rem;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--font-mono)">✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function filterSubtopics(chId, type) {
+  const panel = document.getElementById(`stItems-${chId}`);
+  if (!panel) return;
+  const subs = subtopics.filter(s => s.chapterId === chId && (!type || s.type === type));
+  panel.innerHTML = subs.length ? subs.map(s => subtopicHTML(s)).join('') :
+    '<div style="font-size:0.68rem;color:var(--muted);text-align:center;padding:12px">No items of this type</div>';
+}
+
+async function addSubtopic(chId) {
+  const title = document.getElementById(`st_title_${chId}`)?.value.trim();
+  const type  = document.getElementById(`st_type_${chId}`)?.value;
+  const content = document.getElementById(`st_content_${chId}`)?.value.trim();
+  if (!title) { toast('Enter a title'); return; }
+  await addDoc(subtopicsCol, { chapterId: chId, title, type, content, learned: false, created: today() });
+  document.getElementById(`st_title_${chId}`).value = '';
+  document.getElementById(`st_content_${chId}`).value = '';
+  toast('✅ Added!');
+}
+
+async function toggleLearnedSt(id) {
+  const s = subtopics.find(s => s._id === id); if (!s) return;
+  await updateDoc(doc(db,'subtopics',id), { learned: !s.learned });
+}
+
+async function deleteSubtopic(id) {
+  if (!confirm('Delete this subtopic?')) return;
+  await deleteDoc(doc(db,'subtopics',id));
+  toast('Deleted');
+}
+
+function editSubtopic(id) {
+  const s = subtopics.find(s => s._id === id); if (!s) return;
+  const newTitle = prompt('Edit title:', s.title);
+  if (newTitle === null) return;
+  const newContent = prompt('Edit content:', s.content || '');
+  if (newContent === null) return;
+  updateDoc(doc(db,'subtopics',id), { title: newTitle.trim(), content: newContent.trim() });
+  toast('Updated!');
 }
 
 function exportSyllabus() {
@@ -1828,6 +2040,51 @@ function closeQuickTask() {
 }
 
 // ══════════════════════════════════════════════
+// SUBJECT MANAGEMENT
+// ══════════════════════════════════════════════
+async function addSubject() {
+  const name = document.getElementById('newSubName').value.trim();
+  const icon = document.getElementById('newSubIcon').value.trim() || '📚';
+  const color = document.getElementById('newSubColor').value;
+  if (!name) { toast('Enter a subject name'); return; }
+  if (SUBJECTS.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Subject already exists!'); return; }
+  await addDoc(subjectsCol, { name, icon, color, order: SUBJECTS.length });
+  document.getElementById('newSubName').value = '';
+  document.getElementById('newSubIcon').value = '';
+  toast(`✅ "${name}" added!`);
+}
+
+async function deleteSubject(id, name) {
+  if (!confirm(`Delete "${name}"? This won't delete existing tasks but they'll lose their subject color.`)) return;
+  await deleteDoc(doc(db, 'subjects', id));
+  toast(`Deleted "${name}"`);
+}
+
+async function editSubjectColor(id, color) {
+  await updateDoc(doc(db, 'subjects', id), { color });
+}
+
+async function editSubjectIcon(id, icon) {
+  if (!icon.trim()) return;
+  await updateDoc(doc(db, 'subjects', id), { icon: icon.trim() });
+}
+
+function renderSettingsSubjects() {
+  const el = document.getElementById('settingsSubjectList');
+  if (!el) return;
+  el.innerHTML = SUBJECTS.map(s => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:4px solid ${s.color};border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <input type="text" value="${esc(s.icon||'📚')}" style="width:50px;text-align:center;font-size:1.2rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px;color:var(--ink);font-family:var(--font-mono)" onblur="editSubjectIcon('${s._id}',this.value)" title="Click to change icon">
+      <span style="font-size:0.85rem;font-weight:600;flex:1">${esc(s.name)}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="color" value="${s.color}" style="width:36px;height:28px;padding:2px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer" onchange="editSubjectColor('${s._id}',this.value)" title="Change color">
+        <span style="font-size:0.6rem;color:var(--muted);font-family:var(--font-mono)">${s.color}</span>
+        <button class="btn btn-danger btn-sm" onclick="deleteSubject('${s._id}','${esc(s.name)}')" ${SUBJECTS.length<=1?'disabled':''}>✕ Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 (function init() {
@@ -1852,7 +2109,11 @@ Object.assign(window, {
   selectBook, openChapterModal, closeChapterModal, saveChapterModal,
   deleteChapterFromModal, logRead, logRev, logMcq, exportSyllabus,
   // Quick Task
-  quickAddTask, saveQuickTask, closeQuickTask
+  quickAddTask, saveQuickTask, closeQuickTask,
+  // Subtopics
+  toggleSubtopics, addSubtopic, toggleLearnedSt, deleteSubtopic, editSubtopic, filterSubtopics,
+  // Subject Management
+  addSubject, deleteSubject, editSubjectColor, editSubjectIcon, renderSettingsSubjects
 });
 </script>
 </body>
