@@ -958,9 +958,11 @@ select.filter option { background: var(--surface); }
 
     <!-- Chapter Modal -->
     <div id="chModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center">
-      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:10px;padding:24px;width:min(500px,92vw);max-height:90vh;overflow-y:auto">
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:10px;padding:24px;width:min(560px,94vw);max-height:92vh;overflow-y:auto">
         <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:18px" id="chModalTitle">Add Chapter</div>
-        <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:14px">
+
+          <!-- Name + Priority + Status -->
           <div class="form-group">
             <label>Chapter Name *</label>
             <input type="text" id="chName" placeholder="e.g. Harappan Cultures">
@@ -978,34 +980,105 @@ select.filter option { background: var(--surface); }
               <label>Status</label>
               <select id="chStatus">
                 <option value="pending">Pending</option>
-                <option value="reading">Reading</option>
+                <option value="reading">In Progress</option>
                 <option value="done">Done</option>
               </select>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-            <div class="form-group">
-              <label>Target Reads</label>
-              <input type="number" id="chTargetRead" value="2" min="1" max="20">
-            </div>
-            <div class="form-group">
-              <label>Target Revisions</label>
-              <input type="number" id="chTargetRev" value="2" min="0" max="20">
-            </div>
-            <div class="form-group">
-              <label>Target MCQ</label>
-              <input type="number" id="chTargetMcq" value="1" min="0" max="20">
+
+          <!-- READING SECTION -->
+          <div style="background:var(--surface2);border-radius:8px;padding:14px;border-left:3px solid var(--green)">
+            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);font-weight:700;margin-bottom:10px">📖 Reading / Activity 1</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group">
+                <label>Label (what to call it)</label>
+                <select id="chReadLabel" onchange="checkCustomLabel('Read')">
+                  <option value="Reading">Reading</option>
+                  <option value="Practice">Practice</option>
+                  <option value="Study">Study</option>
+                  <option value="Listening">Listening</option>
+                  <option value="Watching">Watching</option>
+                  <option value="Custom">✏️ Custom...</option>
+                </select>
+              </div>
+              <div class="form-group" id="chReadCustomWrap" style="display:none">
+                <label>Custom Label</label>
+                <input type="text" id="chReadCustom" placeholder="e.g. Video Lecture">
+              </div>
+              <div class="form-group">
+                <label>Target Count</label>
+                <input type="number" id="chTargetRead" value="2" min="1" max="50">
+              </div>
             </div>
           </div>
+
+          <!-- REVISION SECTION -->
+          <div style="background:var(--surface2);border-radius:8px;padding:14px;border-left:3px solid var(--blue)">
+            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:10px">🔄 Revision / Activity 2</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group">
+                <label>Label</label>
+                <select id="chRevLabel" onchange="checkCustomLabel('Rev')">
+                  <option value="Revision">Revision</option>
+                  <option value="Review">Review</option>
+                  <option value="Re-reading">Re-reading</option>
+                  <option value="Notes">Notes Making</option>
+                  <option value="Mind Map">Mind Map</option>
+                  <option value="Custom">✏️ Custom...</option>
+                </select>
+              </div>
+              <div class="form-group" id="chRevCustomWrap" style="display:none">
+                <label>Custom Label</label>
+                <input type="text" id="chRevCustom" placeholder="e.g. Flashcards">
+              </div>
+              <div class="form-group">
+                <label>Target Count</label>
+                <input type="number" id="chTargetRev" value="2" min="0" max="50">
+              </div>
+            </div>
+          </div>
+
+          <!-- MCQ SECTION -->
+          <div style="background:var(--surface2);border-radius:8px;padding:14px;border-left:3px solid var(--purple)">
+            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--purple);font-weight:700;margin-bottom:10px">❓ MCQ / Practice Test</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group">
+                <label>Label</label>
+                <select id="chMcqLabel" onchange="checkCustomLabel('Mcq')">
+                  <option value="MCQ">MCQ</option>
+                  <option value="PYQ">PYQ (Past Year Questions)</option>
+                  <option value="Mock Test">Mock Test</option>
+                  <option value="Practice Set">Practice Set</option>
+                  <option value="Quiz">Quiz</option>
+                  <option value="Custom">✏️ Custom...</option>
+                </select>
+              </div>
+              <div class="form-group" id="chMcqCustomWrap" style="display:none">
+                <label>Custom Label</label>
+                <input type="text" id="chMcqCustom" placeholder="e.g. Test Series">
+              </div>
+              <div class="form-group">
+                <label>Target Sets</label>
+                <input type="number" id="chTargetMcq" value="1" min="0" max="50">
+              </div>
+              <div class="form-group">
+                <label>Questions per Set</label>
+                <input type="number" id="chMcqQPerSet" value="0" min="0" max="500" placeholder="0 = not set">
+              </div>
+            </div>
+            <div style="margin-top:8px;font-size:0.62rem;color:var(--muted)" id="chMcqTotalLabel"></div>
+          </div>
+
           <div class="form-group">
             <label>Notes</label>
             <textarea id="chNotes" placeholder="Any notes about this chapter..."></textarea>
           </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:18px">
-          <button class="btn btn-primary" onclick="saveChapterModal()">Save</button>
+
+        <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveChapterModal()">Save Chapter</button>
           <button class="btn btn-ghost" onclick="closeChapterModal()">Cancel</button>
-          <button class="btn btn-danger btn-sm" id="chDeleteBtn" style="margin-left:auto;display:none" onclick="deleteChapterFromModal()">Delete</button>
+          <button class="btn btn-danger btn-sm" id="chDeleteBtn" style="margin-left:auto;display:none" onclick="deleteChapterFromModal()">🗑 Delete</button>
         </div>
       </div>
     </div>
@@ -1650,34 +1723,86 @@ function selectBook(id) {
 }
 
 // ── Chapter Modal ──
+function checkCustomLabel(which) {
+  const sel = document.getElementById(`ch${which}Label`);
+  const wrap = document.getElementById(`ch${which}CustomWrap`);
+  if (!sel || !wrap) return;
+  wrap.style.display = sel.value === 'Custom' ? '' : 'none';
+  // Update total MCQ label
+  if (which === 'Mcq') updateMcqTotal();
+}
+function updateMcqTotal() {
+  const sets = parseInt(document.getElementById('chTargetMcq')?.value)||0;
+  const qps  = parseInt(document.getElementById('chMcqQPerSet')?.value)||0;
+  const el   = document.getElementById('chMcqTotalLabel');
+  if (el && sets > 0 && qps > 0) el.textContent = `→ Total: ${sets * qps} questions`;
+  else if (el) el.textContent = '';
+}
+function getFinalLabel(which) {
+  const sel = document.getElementById(`ch${which}Label`);
+  if (!sel) return which === 'Read' ? 'Reading' : which === 'Rev' ? 'Revision' : 'MCQ';
+  if (sel.value === 'Custom') {
+    const custom = document.getElementById(`ch${which}Custom`)?.value.trim();
+    return custom || sel.options[0].value;
+  }
+  return sel.value;
+}
+function setSelectValue(selId, val, defaultVal) {
+  const el = document.getElementById(selId);
+  if (!el) return;
+  const opt = Array.from(el.options).find(o => o.value === val);
+  if (opt) { el.value = val; }
+  else { el.value = 'Custom'; checkCustomLabel(selId.replace('ch','').replace('Label','')); const custom = document.getElementById(selId.replace('Label','Custom')); if(custom) custom.value = val || defaultVal; }
+}
+
 function openChapterModal(chId) {
   editingChapterId = chId || null;
   const modal = document.getElementById('chModal');
   const ch = chId ? syllabusChapters.find(c => c._id === chId) : null;
   document.getElementById('chModalTitle').textContent = ch ? 'Edit Chapter' : 'Add Chapter';
-  document.getElementById('chName').value = ch ? ch.name : '';
-  document.getElementById('chPri').value = ch ? ch.priority : 'High';
-  document.getElementById('chStatus').value = ch ? (ch.status||'pending') : 'pending';
-  document.getElementById('chTargetRead').value = ch ? (ch.targetRead||2) : 2;
-  document.getElementById('chTargetRev').value = ch ? (ch.targetRev||2) : 2;
-  document.getElementById('chTargetMcq').value = ch ? (ch.targetMcq||1) : 1;
-  document.getElementById('chNotes').value = ch ? (ch.notes||'') : '';
+  document.getElementById('chName').value = ch?.name || '';
+  document.getElementById('chPri').value = ch?.priority || 'High';
+  document.getElementById('chStatus').value = ch?.status || 'pending';
+  document.getElementById('chTargetRead').value = ch?.targetRead || 2;
+  document.getElementById('chTargetRev').value = ch?.targetRev || 2;
+  document.getElementById('chTargetMcq').value = ch?.targetMcq || 1;
+  document.getElementById('chMcqQPerSet').value = ch?.mcqQPerSet || 0;
+  document.getElementById('chNotes').value = ch?.notes || '';
+  // Set labels
+  setSelectValue('chReadLabel', ch?.readLabel || 'Reading', 'Reading');
+  setSelectValue('chRevLabel',  ch?.revLabel  || 'Revision', 'Revision');
+  setSelectValue('chMcqLabel',  ch?.mcqLabel  || 'MCQ', 'MCQ');
+  // Hide custom fields initially
+  ['Read','Rev','Mcq'].forEach(w => {
+    const wrap = document.getElementById(`ch${w}CustomWrap`);
+    const sel  = document.getElementById(`ch${w}Label`);
+    if (wrap && sel) wrap.style.display = sel.value === 'Custom' ? '' : 'none';
+  });
+  updateMcqTotal();
   document.getElementById('chDeleteBtn').style.display = ch ? '' : 'none';
   modal.style.display = 'flex';
 }
+
 function closeChapterModal() {
   document.getElementById('chModal').style.display = 'none';
   editingChapterId = null;
 }
+
 async function saveChapterModal() {
   const name = document.getElementById('chName').value.trim();
   if (!name) { toast('Enter chapter name'); return; }
+  const readLabel = getFinalLabel('Read');
+  const revLabel  = getFinalLabel('Rev');
+  const mcqLabel  = getFinalLabel('Mcq');
+  const mcqQPerSet = parseInt(document.getElementById('chMcqQPerSet').value)||0;
   const data = {
-    name, priority: document.getElementById('chPri').value,
-    status: document.getElementById('chStatus').value,
+    name,
+    priority: document.getElementById('chPri').value,
+    status:   document.getElementById('chStatus').value,
     targetRead: parseInt(document.getElementById('chTargetRead').value)||2,
-    targetRev: parseInt(document.getElementById('chTargetRev').value)||2,
-    targetMcq: parseInt(document.getElementById('chTargetMcq').value)||1,
+    targetRev:  parseInt(document.getElementById('chTargetRev').value)||2,
+    targetMcq:  parseInt(document.getElementById('chTargetMcq').value)||1,
+    readLabel, revLabel, mcqLabel, mcqQPerSet,
     notes: document.getElementById('chNotes').value.trim(),
   };
   if (editingChapterId) {
@@ -1768,27 +1893,27 @@ function renderSyllabusCards() {
 
           <!-- Three trackers -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
-            <!-- Reading -->
+            <!-- Reading / Custom -->
             <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Readings</span>
+                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">${ch.readLabel||'Readings'}</span>
                 <span style="font-size:0.72rem;font-weight:700;color:${rDone>=rTarget?'var(--green)':'var(--ink)'}">${rDone}/${rTarget}</span>
               </div>
               <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
                 <div style="width:${rPct}%;height:100%;background:var(--green);border-radius:2px;transition:width 0.4s"></div>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap">
-                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastRead ? fmt(ch.lastRead) : 'Not read'}</span>
+                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastRead ? fmt(ch.lastRead) : 'Not started'}</span>
                 <div style="display:flex;gap:4px">
-                  <button class="ch-count-btn" onclick="logRead('${ch._id}')" title="Log a reading">+1</button>
+                  <button class="ch-count-btn" onclick="logRead('${ch._id}')" title="Log one ${ch.readLabel||'reading'}">+1</button>
                   <button class="ch-count-btn" onclick="quickAddTask('${ch._id}','reading')" title="Add to Tasks" style="background:var(--green-dim);border-color:var(--green);color:var(--green)">📋</button>
                 </div>
               </div>
             </div>
-            <!-- Revision -->
+            <!-- Revision / Custom -->
             <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Revisions</span>
+                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">${ch.revLabel||'Revisions'}</span>
                 <span style="font-size:0.72rem;font-weight:700;color:${vDone>=vTarget?'var(--green)':'var(--ink)'}">${vDone}/${vTarget}</span>
               </div>
               <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
@@ -1802,17 +1927,18 @@ function renderSyllabusCards() {
                 </div>
               </div>
             </div>
-            <!-- MCQ -->
+            <!-- MCQ / Custom -->
             <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">MCQ Sets</span>
+                <span style="font-size:0.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">${ch.mcqLabel||'MCQ'}</span>
                 <span style="font-size:0.72rem;font-weight:700;color:${mDone>=mTarget?'var(--green)':'var(--ink)'}">${mDone}/${mTarget}</span>
               </div>
               <div style="height:3px;background:var(--surface3);border-radius:2px;margin-bottom:6px">
                 <div style="width:${mPct}%;height:100%;background:var(--purple);border-radius:2px;transition:width 0.4s"></div>
               </div>
+              ${ch.mcqQPerSet > 0 ? `<div style="font-size:0.58rem;color:var(--purple);margin-bottom:4px">✦ ${ch.mcqQPerSet} Q/set · ${mDone * ch.mcqQPerSet}/${mTarget * ch.mcqQPerSet} Q done</div>` : ''}
               <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap">
-                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastMcq ? fmt(ch.lastMcq) : 'No MCQ yet'}</span>
+                <span style="font-size:0.58rem;color:var(--muted2)">${ch.lastMcq ? fmt(ch.lastMcq) : 'No ${ch.mcqLabel||"MCQ"} yet'}</span>
                 <div style="display:flex;gap:4px">
                   <button class="ch-count-btn" onclick="logMcq('${ch._id}')">+1</button>
                   <button class="ch-count-btn" onclick="quickAddTask('${ch._id}','mcq')" title="Add to Tasks" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple)">📋</button>
@@ -2111,6 +2237,7 @@ Object.assign(window, {
   setSbColor, toggleSyllabusAddBook, addSyllabusBook, deleteSyllabusBook,
   selectBook, openChapterModal, closeChapterModal, saveChapterModal,
   deleteChapterFromModal, logRead, logRev, logMcq, exportSyllabus,
+  checkCustomLabel, updateMcqTotal,
   // Quick Task
   quickAddTask, saveQuickTask, closeQuickTask,
   // Subtopics
