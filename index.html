@@ -269,6 +269,7 @@ body {
 }
 .add-panel.open { display: flex; animation: slideDown 0.2s ease; }
 @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 12px 2px var(--accent)44; } }
 
 /* ══ TOOLBAR ══ */
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
@@ -383,15 +384,27 @@ select.filter option { background: var(--surface); }
 .summary-chip {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
+  border-radius: 12px;
+  padding: 18px 16px;
   text-align: center;
+  position: relative; overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.summary-chip .big { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1; }
-.summary-chip .lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-top: 4px; }
+.summary-chip:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+.summary-chip::before {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--chip-accent, var(--border));
+}
+.summary-chip .big { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1; }
+.summary-chip .lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-top: 6px; }
+.chip-done { --chip-accent: var(--green); }
 .chip-done .big { color: var(--green); }
+.chip-prog { --chip-accent: var(--blue); }
 .chip-prog .big { color: var(--blue); }
+.chip-pend { --chip-accent: var(--yellow); }
 .chip-pend .big { color: var(--yellow); }
+.chip-total { --chip-accent: var(--accent); }
 .chip-total .big { color: var(--ink); }
 
 /* ══ PROGRESS CARDS ══ */
@@ -585,37 +598,91 @@ select.filter option { background: var(--surface); }
 .color-dot:hover { transform: scale(1.2); }
 .active-dot { border-color: var(--ink) !important; transform: scale(1.15); }
 
+/* ══ BOOK CARDS — vibrant redesign ══ */
 .book-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 12px 16px;
-  display: flex; align-items: center; gap: 12px;
-  cursor: pointer; transition: all 0.12s; border-left: 3px solid var(--accent);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  position: relative; overflow: hidden;
 }
-.book-card:hover { background: var(--surface2); }
-.book-card.active-book { background: var(--surface2); border-color: var(--border2); }
-.book-card-name { font-size: 0.8rem; font-weight: 600; flex: 1; }
-.book-card-sub { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+.book-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--bk-color, var(--accent)), transparent);
+  opacity: 0.8;
+}
+.book-card::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 0; width: 4px;
+  background: var(--bk-color, var(--accent));
+  border-radius: 12px 0 0 12px;
+}
+.book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border-color: var(--bk-color, var(--accent));
+}
+.book-card.active-book {
+  background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
+  border-color: var(--bk-color, var(--accent));
+  box-shadow: 0 0 0 1px var(--bk-color, var(--accent))44, 0 8px 24px rgba(0,0,0,0.3);
+}
+.book-card-name {
+  font-size: 0.82rem; font-weight: 700; flex: 1;
+  letter-spacing: 0.3px; color: var(--ink);
+}
+.book-card-sub {
+  font-size: 0.6rem; color: var(--muted); margin-top: 3px;
+  display: flex; gap: 8px; align-items: center;
+}
+.book-card-pct-ring {
+  width: 42px; height: 42px; flex-shrink: 0; position: relative;
+}
 
-/* Minimal chapter cards */
+/* ══ CHAPTER CARDS — vibrant redesign ══ */
 .ch-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 10px;
   padding: 14px 16px;
   display: grid;
   grid-template-columns: 28px 1fr auto;
   gap: 12px;
   align-items: start;
-  transition: border-color 0.12s;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
   animation: taskIn 0.18s ease;
+  position: relative; overflow: hidden;
 }
-.ch-card:hover { border-color: var(--border2); }
-.ch-card.ch-done { border-left: 3px solid var(--green); }
-.ch-card.ch-reading { border-left: 3px solid var(--blue); }
-.ch-card.ch-pending { border-left: 3px solid var(--border2); }
+.ch-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
+  border-radius: 10px 0 0 10px;
+}
+.ch-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+.ch-card.ch-done { border-color: var(--green)44; }
+.ch-card.ch-done::before { background: linear-gradient(180deg, var(--green), #1a8a36); }
+.ch-card.ch-done:hover { border-color: var(--green); }
+.ch-card.ch-reading { border-color: var(--blue)44; }
+.ch-card.ch-reading::before { background: linear-gradient(180deg, var(--blue), #2970c9); }
+.ch-card.ch-reading:hover { border-color: var(--blue); }
+.ch-card.ch-pending::before { background: var(--surface3); }
+.ch-card.ch-pending:hover { border-color: var(--border2); }
 
-.ch-num { font-size: 0.65rem; color: var(--muted); padding-top: 2px; text-align: right; }
-.ch-name { font-size: 0.82rem; font-weight: 600; margin-bottom: 8px; }
+.ch-num {
+  font-size: 0.62rem; color: var(--muted2); padding-top: 3px;
+  text-align: right; font-family: var(--font-mono);
+}
+.ch-name {
+  font-size: 0.84rem; font-weight: 700; margin-bottom: 8px;
+  letter-spacing: 0.2px;
+}
 .ch-notes-inp {
   font-size: 0.68rem; color: var(--muted); background: none; border: none;
   border-bottom: 1px dashed var(--border); width: 100%; outline: none;
@@ -909,7 +976,7 @@ select.filter option { background: var(--surface); }
       <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px">
         <div style="flex:1;min-width:260px">
           <div class="section-title">My Syllabus Books</div>
-          <div id="syllabusBookList" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div id="syllabusBookList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:4px"></div>
           <button class="btn btn-primary" style="margin-top:10px" onclick="toggleSyllabusAddBook()">+ Add Book / Subject</button>
           <div class="add-panel" id="syllabusAddBook" style="margin-top:10px;flex-direction:column;gap:10px">
             <div class="form-group">
@@ -942,14 +1009,16 @@ select.filter option { background: var(--surface); }
 
       <!-- Chapter Section -->
       <div id="syllabusChapterSection" style="display:none">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-          <div class="section-title" id="syllabusBookTitle" style="margin-bottom:0;flex:1">Chapters</div>
-          <button class="btn btn-primary btn-sm" onclick="openChapterModal()">+ Add Chapter</button>
-          <button class="btn btn-ghost btn-sm" onclick="exportSyllabus()">↓ Export</button>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+          <div id="syllabusBookTitle" style="flex:1"></div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn btn-primary btn-sm" onclick="openChapterModal()">+ Add Chapter</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportSyllabus()">↓ Export</button>
+          </div>
         </div>
 
         <!-- Stats -->
-        <div class="summary-row" id="syllabusSummary" style="margin-bottom:16px"></div>
+        <div class="summary-row" id="syllabusSummary" style="margin-bottom:20px"></div>
 
         <!-- Chapter Cards -->
         <div id="syllabusCards"></div>
@@ -1701,17 +1770,37 @@ function renderSyllabusBooks() {
   el.innerHTML = syllabusBooks.map(b => {
     const chs = syllabusChapters.filter(c => c.bookId === b._id);
     const done = chs.filter(c => c.status === 'done').length;
+    const reading = chs.filter(c => c.status === 'reading').length;
     const pct = chs.length ? Math.round(done/chs.length*100) : 0;
-    return `<div class="book-card ${activeSylBookId===b._id?'active-book':''}" style="border-left-color:${b.color||'var(--accent)'}" onclick="selectBook('${b._id}')">
+    const col = b.color || 'var(--accent)';
+    const sub = SUBJECTS.find(s=>s.name===b.subject) || {icon:'📚'};
+    const r = 16, circ = 2*Math.PI*r;
+    const dash = (pct/100)*circ;
+    const isActive = activeSylBookId===b._id;
+    return `<div class="book-card ${isActive?'active-book':''}" style="--bk-color:${col}" onclick="selectBook('${b._id}')">
+      <svg width="46" height="46" viewBox="0 0 46 46" style="flex-shrink:0;transform:rotate(-90deg)">
+        <circle cx="23" cy="23" r="${r}" fill="none" stroke="var(--surface3)" stroke-width="3.5"/>
+        <circle cx="23" cy="23" r="${r}" fill="none" stroke="${col}" stroke-width="3.5"
+          stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"/>
+        <text x="23" y="23" text-anchor="middle" dominant-baseline="central"
+          style="transform:rotate(90deg);transform-origin:23px 23px;font-size:7.5px;font-weight:800;fill:${col};font-family:monospace">${pct}%</text>
+      </svg>
       <div style="flex:1;min-width:0">
         <div class="book-card-name">${esc(b.name)}</div>
-        <div class="book-card-sub">${b.subject} · ${chs.length} ch · ${done} done</div>
-        <div style="height:3px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${b.color||'var(--accent)'};border-radius:2px;transition:width 0.4s"></div>
+        <div class="book-card-sub">
+          <span style="background:${col}22;color:${col};padding:1px 8px;border-radius:20px;font-size:0.58rem;font-weight:700">${sub.icon} ${b.subject}</span>
+          <span>${chs.length} ch</span>
+          ${done>0?`<span style="color:var(--green);font-weight:600">✓${done}</span>`:''}
+          ${reading>0?`<span style="color:var(--blue)">⋯${reading}</span>`:''}
+        </div>
+        <div style="height:4px;background:var(--surface3);border-radius:2px;margin-top:8px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${col}cc,${col});border-radius:2px;transition:width 0.5s"></div>
         </div>
       </div>
-      <div class="book-card-pct" style="color:${b.color||'var(--accent)'}">${pct}%</div>
-      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteSyllabusBook('${b._id}')">✕</button>
+      <button onclick="event.stopPropagation();deleteSyllabusBook('${b._id}')"
+        style="background:none;border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:0.65rem;flex-shrink:0;transition:all 0.12s"
+        onmouseover="this.style.background='var(--red-dim)';this.style.color='var(--red)';this.style.borderColor='var(--red)'"
+        onmouseout="this.style.background='none';this.style.color='var(--muted)';this.style.borderColor='var(--border)'">✕</button>
     </div>`;
   }).join('');
 }
@@ -1849,18 +1938,26 @@ async function logMcq(id) {
 function renderSyllabusCards() {
   const book = syllabusBooks.find(b => b._id === activeSylBookId);
   if (!book) return;
-  document.getElementById('syllabusBookTitle').textContent = `📖 ${book.name}`;
+  const bookColor = book.color || 'var(--accent)';
+  const bookSub = SUBJECTS.find(s=>s.name===book.subject)||{icon:'📚'};
+  document.getElementById('syllabusBookTitle').innerHTML = `
+    <div style="background:linear-gradient(135deg,${bookColor}18,${bookColor}08);border:1px solid ${bookColor}33;border-radius:10px;padding:14px 18px;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:120px;height:100%;background:linear-gradient(135deg,transparent,${bookColor}15);border-radius:0 10px 10px 0"></div>
+      <div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:2px;color:${bookColor};font-weight:700;margin-bottom:4px">${bookSub.icon} ${book.subject}</div>
+      <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--ink)">${esc(book.name)}</div>
+    </div>`;
   const chs = syllabusChapters.filter(c => c.bookId === activeSylBookId);
 
   // Summary
   const done = chs.filter(c => c.status==='done').length;
   const reading = chs.filter(c => c.status==='reading').length;
   const pend = chs.filter(c => !c.status||c.status==='pending').length;
+  const ovPct = chs.length ? Math.round(done/chs.length*100) : 0;
   document.getElementById('syllabusSummary').innerHTML = `
-    <div class="summary-chip chip-total"><div class="big">${chs.length}</div><div class="lbl">Chapters</div></div>
-    <div class="summary-chip chip-done"><div class="big">${done}</div><div class="lbl">Done</div></div>
-    <div class="summary-chip chip-prog"><div class="big">${reading}</div><div class="lbl">Reading</div></div>
-    <div class="summary-chip chip-pend"><div class="big">${pend}</div><div class="lbl">Pending</div></div>`;
+    <div class="summary-chip chip-total"><div class="big">${chs.length}</div><div class="lbl">Total</div></div>
+    <div class="summary-chip chip-done"><div class="big">${done}</div><div class="lbl">✓ Done</div></div>
+    <div class="summary-chip chip-prog"><div class="big">${reading}</div><div class="lbl">⋯ Reading</div></div>
+    <div class="summary-chip chip-pend"><div class="big">${ovPct}%</div><div class="lbl">Complete</div></div>`;
 
   if (!chs.length) {
     document.getElementById('syllabusCards').innerHTML = '<div class="empty-state"><div class="big">No chapters yet</div><div>Click "+ Add Chapter" to start</div></div>';
